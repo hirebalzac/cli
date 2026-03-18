@@ -1,0 +1,51 @@
+{
+  "name": "balzac-cli",
+  "version": "1.0.0",
+  "description": "CLI for the Balzac AI content platform — manage workspaces, keywords, suggestions, articles, and more from the command line.",
+  "type": "module",
+  "bin": {
+    "balzac": "./dist/index.js"
+  },
+  "scripts": {
+    "dev": "tsup --watch",
+    "build": "tsup",
+    "start": "node dist/index.js"
+  },
+  "keywords": [
+    "balzac",
+    "cli",
+    "content",
+    "ai",
+    "seo",
+    "articles",
+    "content-marketing",
+    "api"
+  ],
+  "author": "Balzac <hello@hirebalzac.ai>",
+  "license": "MIT",
+  "homepage": "https://developer.hirebalzac.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vincenzor/balzac-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vincenzor/balzac-cli/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "chalk": "^5.4.1",
+    "cli-table3": "^0.6.5",
+    "commander": "^13.1.0",
+    "conf": "^13.1.0",
+    "ora": "^8.2.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.4.0",
+    "typescript": "^5.7.3"
+  }
+}
