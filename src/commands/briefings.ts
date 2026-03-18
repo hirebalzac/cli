@@ -68,7 +68,7 @@ export function registerBriefingsCommands(program: Command) {
     });
 
   br.command('create')
-    .description('Create a briefing and start writing (costs 5 credits)')
+    .description('Create a briefing and start writing (costs 3 credits)')
     .requiredOption('--topic <topic>', 'Article topic')
     .option('-w, --workspace <id>', 'Workspace ID')
     .option('--title <title>', 'Article title')

@@ -140,7 +140,7 @@ balzac suggestions get <suggestion-id>
 # Generate new suggestions (async)
 balzac suggestions generate
 
-# Accept suggestion — starts article writing (costs 5 credits)
+# Accept suggestion — starts article writing (costs 3 credits)
 balzac suggestions accept <suggestion-id>
 
 # Reject suggestion
@@ -153,7 +153,7 @@ balzac suggestions reject <suggestion-id>
 # List briefings
 balzac briefings list
 
-# Create briefing — immediately starts writing (costs 5 credits)
+# Create briefing — immediately starts writing (costs 3 credits)
 balzac briefings create --topic "How to use AI for content marketing"
 balzac briefings create --topic "SEO tips" --type listicle --length long
 
@@ -178,7 +178,7 @@ balzac articles get <article-id>
 # Update metadata
 balzac articles update <id> --title "New Title" --slug "new-slug"
 
-# Rewrite article (costs 5 credits)
+# Rewrite article (costs 3 credits)
 balzac articles rewrite <id>
 balzac articles rewrite <id> --length long --instructions "More technical depth"
 
@@ -423,7 +423,7 @@ Several operations are asynchronous:
 1. **API key not set** — Always `export BALZAC_API_KEY=key` or `balzac auth login` before using CLI
 2. **No default workspace** — Run `balzac config set workspace <id>` or pass `-w <id>` to every command
 3. **Workspace not ready** — After `workspaces create`, the workspace goes through `new` → `running` → `imported`. Use `--wait` or poll `workspaces get` until status is `imported` or `ready`
-4. **Credits exhausted** — Article writing requires 5 credits. If insufficient, status becomes `waiting_for_credits`. Check billing in the Balzac app
+4. **Credits exhausted** — Article writing requires 3 credits. If insufficient, status becomes `waiting_for_credits`. Check billing in the Balzac app
 5. **Async operations need polling** — Suggestion generation, article writing, and long-tail keyword generation are asynchronous. Poll the relevant list/get endpoint
 6. **JSON output for scripting** — Always use `--json` flag when piping to `jq` or other tools. Default output is human-formatted and not parseable
 7. **Rate limiting** — API allows 100 requests/minute. CLI auto-retries on 429 with exponential backoff. Add `sleep 1` between batch operations

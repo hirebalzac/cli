@@ -121,7 +121,7 @@ export function registerArticlesCommands(program: Command) {
     });
 
   art.command('rewrite')
-    .description('Rewrite an article (costs 5 credits)')
+    .description('Rewrite an article (costs 3 credits)')
     .argument('<id>', 'Article ID')
     .option('-w, --workspace <id>', 'Workspace ID')
     .option('--length <l>', 'Length (short/normal/long/extra_long)')

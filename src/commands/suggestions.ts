@@ -81,7 +81,7 @@ export function registerSuggestionsCommands(program: Command) {
     });
 
   sg.command('accept')
-    .description('Accept a suggestion (starts article writing, costs 5 credits)')
+    .description('Accept a suggestion (starts article writing, costs 3 credits)')
     .argument('<id>', 'Suggestion ID')
     .option('-w, --workspace <id>', 'Workspace ID')
     .action(async (id, opts) => {

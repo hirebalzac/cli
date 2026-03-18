@@ -123,7 +123,7 @@ balzac suggestions get <suggestion-id>
 # Generate new suggestions
 balzac suggestions generate
 
-# Accept a suggestion (starts article writing — costs 5 credits)
+# Accept a suggestion (starts article writing — costs 3 credits)
 balzac suggestions accept <suggestion-id>
 
 # Reject a suggestion
@@ -138,7 +138,7 @@ Direct write instructions. Creating a briefing immediately starts the article wr
 # List briefings
 balzac briefings list
 
-# Create a briefing (starts writing — costs 5 credits)
+# Create a briefing (starts writing — costs 3 credits)
 balzac briefings create --topic "How to use AI for content marketing in 2026"
 balzac briefings create --topic "SEO tips" --type listicle --length long
 
@@ -162,7 +162,7 @@ balzac articles get <article-id>
 # Update article metadata
 balzac articles update <article-id> --title "New Title" --slug "new-slug"
 
-# Rewrite article (costs 5 credits)
+# Rewrite article (costs 3 credits)
 balzac articles rewrite <article-id>
 balzac articles rewrite <article-id> --length long --instructions "More technical depth"
 
@@ -521,15 +521,15 @@ balzac keywords generate-long-tail <id>                     # Generate variants
 # Suggestions
 balzac suggestions list --status proposed                   # Pending suggestions
 balzac suggestions generate                                 # Generate new
-balzac suggestions accept <id>                              # Accept (5 credits)
+balzac suggestions accept <id>                              # Accept (3 credits)
 
 # Briefings
-balzac briefings create --topic "My topic"                  # Write article (5 credits)
+balzac briefings create --topic "My topic"                  # Write article (3 credits)
 
 # Articles
 balzac articles list --status done                          # Completed articles
 balzac articles get <id>                                    # Full content
-balzac articles rewrite <id>                                # Rewrite (5 credits)
+balzac articles rewrite <id>                                # Rewrite (3 credits)
 balzac articles regenerate-picture <id>                     # New picture (1 credit)
 balzac articles export <id> --format markdown               # Export
 balzac articles publish <id> --integration <int-id>         # Publish
