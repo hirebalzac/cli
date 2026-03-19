@@ -1,5 +1,8 @@
 # Balzac CLI
 
+[![npm version](https://img.shields.io/npm/v/balzac-cli.svg)](https://www.npmjs.com/package/balzac-cli)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+
 **AI content platform CLI** — manage workspaces, keywords, suggestions, articles, and more from the command line.
 
 The Balzac CLI provides a complete interface to the [Balzac API](https://developer.hirebalzac.ai), enabling developers and AI agents to automate content creation, manage SEO keywords, and publish articles across integrations programmatically.
