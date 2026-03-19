@@ -623,6 +623,13 @@ balzac -q articles list                                     # IDs only
 
 ---
 
+## See Also
+
+- [Balzac MCP Server](https://github.com/vincenzor/balzac-mcp) -- Use Balzac natively from AI assistants (Cursor, Claude Desktop, VS Code)
+- [API Documentation](https://developer.hirebalzac.ai) -- Full REST API reference
+
+---
+
 ## License
 
 MIT
