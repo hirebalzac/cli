@@ -36,9 +36,9 @@ export function registerIntegrationsCommands(program: Command) {
           { page: opts.page, per_page: opts.perPage }
         );
         printTable(items, [
-          { key: 'id', label: 'ID', format: (v) => String(v).slice(0, 8) + '…' },
+          { key: 'id', label: 'ID' },
           { key: 'service', label: 'Service' },
-          { key: 'name', label: 'Name', format: (v) => truncate(v as string, 25) },
+          { key: 'name', label: 'Name' },
           { key: 'status', label: 'Status', format: statusColor },
           { key: 'auto_publish', label: 'Auto-publish', format: (v) => v ? '✓' : '—' },
         ]);

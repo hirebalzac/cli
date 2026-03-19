@@ -41,8 +41,8 @@ export function registerKeywordsCommands(program: Command) {
           { level: opts.level, status: opts.status, parent_id: opts.parent, page: opts.page, per_page: opts.perPage }
         );
         printTable(items, [
-          { key: 'id', label: 'ID', format: (v) => String(v).slice(0, 8) + '…' },
-          { key: 'name', label: 'Keyword', format: (v) => truncate(v as string, 40) },
+          { key: 'id', label: 'ID' },
+          { key: 'name', label: 'Keyword' },
           { key: 'level', label: 'Lvl' },
           { key: 'status', label: 'Status', format: (v) => formatStatus(v as string) },
           { key: 'search_volume', label: 'Volume' },

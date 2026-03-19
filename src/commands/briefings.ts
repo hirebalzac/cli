@@ -39,8 +39,8 @@ export function registerBriefingsCommands(program: Command) {
           { status: opts.status, page: opts.page, per_page: opts.perPage }
         );
         printTable(items, [
-          { key: 'id', label: 'ID', format: (v) => String(v).slice(0, 8) + '…' },
-          { key: 'topic', label: 'Topic', format: (v) => truncate(v as string, 50) },
+          { key: 'id', label: 'ID' },
+          { key: 'topic', label: 'Topic' },
           { key: 'type_of', label: 'Type' },
           { key: 'status', label: 'Status', format: (v) => formatStatus(v as string) },
           { key: 'language', label: 'Lang' },

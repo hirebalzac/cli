@@ -28,9 +28,9 @@ export function registerLinksCommands(program: Command) {
           { page: opts.page, per_page: opts.perPage }
         );
         printTable(items, [
-          { key: 'id', label: 'ID', format: (v) => String(v).slice(0, 8) + '…' },
-          { key: 'url', label: 'URL', format: (v) => truncate(v as string, 50) },
-          { key: 'title', label: 'Title', format: (v) => truncate(v as string, 30) },
+          { key: 'id', label: 'ID' },
+          { key: 'url', label: 'URL' },
+          { key: 'title', label: 'Title' },
         ]);
         printPagination(meta);
       } catch (err) {

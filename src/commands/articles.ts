@@ -8,8 +8,8 @@ import {
 } from '../output.js';
 
 const LIST_COLS = [
-  { key: 'id', label: 'ID', format: (v: unknown) => String(v).slice(0, 8) + '…' },
-  { key: 'title', label: 'Title', format: (v: unknown) => truncate(v as string, 45) },
+  { key: 'id', label: 'ID' },
+  { key: 'title', label: 'Title' },
   { key: 'status', label: 'Status', format: (v: unknown) => formatStatus(v as string) },
   { key: 'type_of', label: 'Type' },
   { key: 'language', label: 'Lang' },

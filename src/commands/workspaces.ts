@@ -37,9 +37,9 @@ export function registerWorkspacesCommands(program: Command) {
           { status: opts.status, page: opts.page, per_page: opts.perPage }
         );
         printTable(items, [
-          { key: 'id', label: 'ID', format: (v) => String(v).slice(0, 8) + '…' },
-          { key: 'name', label: 'Name', format: (v) => truncate(v as string, 30) },
-          { key: 'domain', label: 'Domain', format: (v) => truncate(v as string, 30) },
+          { key: 'id', label: 'ID' },
+          { key: 'name', label: 'Name' },
+          { key: 'domain', label: 'Domain' },
           { key: 'status', label: 'Status', format: (v) => formatStatus(v as string) },
           { key: 'language', label: 'Lang' },
         ]);

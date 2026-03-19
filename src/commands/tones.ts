@@ -18,10 +18,10 @@ export function registerTonesCommands(program: Command) {
       try {
         const res = await client.get<{ tones_of_voice: Record<string, unknown>[] }>('/tones_of_voice');
         printTable(res.data.tones_of_voice, [
-          { key: 'id', label: 'ID', format: (v) => String(v).slice(0, 8) + '…' },
+          { key: 'id', label: 'ID' },
           { key: 'name', label: 'Name' },
           { key: 'code', label: 'Code' },
-          { key: 'description', label: 'Description', format: (v) => truncate(v as string, 50) },
+          { key: 'description', label: 'Description' },
         ]);
       } catch (err) {
         printError(err);
