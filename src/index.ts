@@ -1,3 +1,4 @@
+declare const PKG_VERSION: string;
 import { Command } from 'commander';
 import { setJsonMode, setQuietMode } from './output.js';
 import { registerAuthCommands } from './commands/auth.js';
@@ -19,7 +20,7 @@ const program = new Command();
 program
   .name('balzac')
   .description('CLI for the Balzac AI content platform')
-  .version('1.0.0')
+  .version(PKG_VERSION)
   .option('--json', 'Output raw JSON')
   .option('-q, --quiet', 'Minimal output (IDs only)')
   .hook('preAction', (thisCommand) => {
