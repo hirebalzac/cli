@@ -253,9 +253,11 @@ balzac integrations create --service wordpress --name "My Blog" \
 balzac integrations lookup webflow-sites --token "wf_token"
 balzac integrations lookup webflow-collections --token "wf_token" --site-id "site_123"
 
-# Create Webhook integration
+# Create Webhook integration (auto-publish sends articles automatically)
 balzac integrations create --service webhook --name "My Webhook" \
-  --webhook-url https://example.com/hook
+  --webhook-url https://example.com/hook \
+  --webhook-token "optional_bearer_secret" \
+  --auto-publish
 
 # Reconnect / test connection
 balzac integrations reconnect <id>
@@ -266,6 +268,29 @@ balzac integrations get <id>
 # Delete integration
 balzac integrations delete <id>
 ```
+
+#### Webhook Payload
+
+When an article is published to a webhook integration, Balzac sends a `POST` request to your URL with the following JSON payload:
+
+```json
+{
+  "title": "Article Title",
+  "content": "Full HTML content of the article",
+  "slug": "article-slug",
+  "description": "Short description or excerpt",
+  "cover_image": "URL to the article's main image",
+  "published_at": "2026-03-19T15:30:45Z"
+}
+```
+
+If you provided a `webhook_bearer_token`, it is included as:
+
+```
+Authorization: Bearer your_token_here
+```
+
+Your endpoint should respond with `200 OK`. Set `auto_publish` to `true` to receive articles automatically as they are completed, or publish manually with `balzac articles publish <id> --integration <id>`.
 
 ### Settings
 

@@ -407,7 +407,32 @@ STATUS=$(balzac --json integrations get "$INTG_ID" | jq -r '.integration.status'
 echo "Connection status: $STATUS"
 ```
 
-### Pattern 8: Error Handling and Retry
+### Pattern 8: Set Up a Webhook to Receive Articles
+
+```bash
+#!/bin/bash
+# Create a webhook integration with auto-publish
+# Balzac will POST article data to your URL whenever an article is completed
+balzac integrations create --service webhook --name "My App Webhook" \
+  --webhook-url "https://example.com/balzac-hook" \
+  --webhook-token "my_secret_token" \
+  --auto-publish
+
+# Webhook payload sent to your URL:
+# {
+#   "title": "Article Title",
+#   "content": "Full HTML content",
+#   "slug": "article-slug",
+#   "description": "Short excerpt",
+#   "cover_image": "https://...",
+#   "published_at": "2026-03-19T15:30:45Z"
+# }
+#
+# Authorization header: Bearer my_secret_token
+# Your endpoint should respond with 200 OK
+```
+
+### Pattern 9: Error Handling and Retry
 
 ```bash
 #!/bin/bash
