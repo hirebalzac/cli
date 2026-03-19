@@ -48,10 +48,21 @@ export function registerAuthCommands(program: Command) {
             console.log(chalk.dim('  Run ') + chalk.bold('balzac workspaces list') + chalk.dim(' to get started.'));
           }
           console.log('');
-        } catch {
-          clearApiKey();
-          console.log('');
-          printError(new Error('Invalid API key. Please check your key and try again.'));
+        } catch (e: unknown) {
+          const err = e as Error & { status?: number; type?: string };
+          if (err.status === 401 || err.type === 'unauthorized') {
+            clearApiKey();
+            console.log('');
+            printError(new Error('Invalid API key. Please check your key and try again.'));
+          } else {
+            clearApiKey();
+            console.log('');
+            printError(new Error(
+              'Could not verify API key: ' + (err.message || 'unknown error') +
+              '\n  API URL: ' + getApiUrl() +
+              '\n  Check your network connection and API URL, then try again.'
+            ));
+          }
           process.exit(1);
         }
       } catch (err) {
@@ -93,11 +104,23 @@ export function registerAuthCommands(program: Command) {
             console.log(chalk.dim('  Key: ') + masked);
             console.log(chalk.dim('  API: ') + getApiUrl());
           }
-        } catch {
-          if (isJsonMode()) {
-            printJson({ authenticated: false, key: masked, error: 'Invalid API key' });
+        } catch (e: unknown) {
+          const err = e as Error & { status?: number; type?: string };
+          if (err.status === 401 || err.type === 'unauthorized') {
+            if (isJsonMode()) {
+              printJson({ authenticated: false, key: masked, api_url: getApiUrl(), error: 'Invalid or expired API key' });
+            } else {
+              printError(new Error('API key is invalid or expired (' + masked + ')'));
+            }
           } else {
-            printError(new Error('API key is invalid or expired (' + masked + ')'));
+            if (isJsonMode()) {
+              printJson({ authenticated: false, key: masked, api_url: getApiUrl(), error: err.message || 'Connection failed' });
+            } else {
+              printError(new Error(
+                'Could not reach API: ' + (err.message || 'unknown error') +
+                '\n  API URL: ' + getApiUrl()
+              ));
+            }
           }
         }
       } catch (err) {
