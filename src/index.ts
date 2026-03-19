@@ -11,6 +11,7 @@ import { registerCompetitorsCommands } from './commands/competitors.js';
 import { registerLinksCommands } from './commands/links.js';
 import { registerSettingsCommands } from './commands/settings.js';
 import { registerTonesCommands } from './commands/tones.js';
+import { registerIntegrationsCommands } from './commands/integrations.js';
 import { registerConfigCommands } from './commands/config.js';
 
 const program = new Command();
@@ -38,6 +39,7 @@ registerCompetitorsCommands(program);
 registerLinksCommands(program);
 registerSettingsCommands(program);
 registerTonesCommands(program);
+registerIntegrationsCommands(program);
 registerConfigCommands(program);
 
 program.parse();

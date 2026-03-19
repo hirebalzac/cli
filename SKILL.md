@@ -1,6 +1,6 @@
 ---
 name: balzac
-description: Balzac is an AI content platform CLI — create workspaces, manage SEO keywords, generate article suggestions, write articles, and publish content across integrations. Supports workspaces, keywords, suggestions, briefings, articles, competitors, links, settings, and tones of voice.
+description: Balzac is an AI content platform CLI — create workspaces, manage SEO keywords, generate article suggestions, write articles, and publish content across integrations. Supports workspaces, keywords, suggestions, briefings, articles, competitors, links, integrations, settings, and tones of voice.
 homepage: https://developer.hirebalzac.ai
 metadata: {"clawdbot":{"emoji":"✍️","requires":{"bins":["balzac"],"env":["BALZAC_API_KEY"]}}}
 ---
@@ -230,6 +230,55 @@ balzac links get <id>
 balzac links remove <id>
 ```
 
+### Integrations
+
+```bash
+# List integrations
+balzac integrations list
+
+# Get integration details
+balzac integrations get <id>
+
+# Create WordPress integration
+balzac integrations create --service wordpress --name "My WP Blog" \
+  --wordpress-url https://myblog.com --wordpress-username admin \
+  --wordpress-password "app_pass_here"
+
+# Create Webflow integration (discover resources first)
+balzac integrations lookup webflow-sites --token "wf_token"
+balzac integrations lookup webflow-collections --token "wf_token" --site-id "site_123"
+balzac integrations lookup webflow-fields --token "wf_token" --collection-id "col_123"
+balzac integrations create --service webflow --name "My Webflow Site" \
+  --webflow-token "wf_token" --webflow-site-id "site_123" \
+  --webflow-collection-id "col_123" --auto-publish
+
+# Create Wix integration
+balzac integrations lookup wix-sites --api-key "wix_key"
+balzac integrations lookup wix-members --api-key "wix_key" --site-id "site_123"
+balzac integrations create --service wix --name "My Wix Blog" \
+  --wix-api-key "wix_key" --wix-site-id "site_123" --wix-member-id "member_123"
+
+# Create GoHighLevel integration
+balzac integrations lookup gohighlevel-resources --token "ghl_token" --location-id "loc_123"
+balzac integrations create --service gohighlevel --name "My GHL Blog" \
+  --ghl-token "ghl_token" --ghl-location-id "loc_123" \
+  --ghl-blog-id "blog_123" --ghl-author-id "author_123" \
+  --ghl-category-id "cat_123"
+
+# Create Webhook integration
+balzac integrations create --service webhook --name "My Webhook" \
+  --webhook-url https://example.com/hook --webhook-token "optional_bearer"
+
+# Update integration
+balzac integrations update <id> --name "New Name" --auto-publish true
+
+# Reconnect / test connection
+balzac integrations reconnect <id>
+
+# Delete integration
+balzac integrations delete <id>
+```
+
 ### Settings
 
 ```bash
@@ -339,7 +388,26 @@ while true; do
 done
 ```
 
-### Pattern 7: Error Handling and Retry
+### Pattern 7: Connect a WordPress Integration
+
+```bash
+#!/bin/bash
+# Create a WordPress integration and wait for connection test
+balzac integrations create --service wordpress --name "Production Blog" \
+  --wordpress-url https://myblog.com \
+  --wordpress-username admin \
+  --wordpress-password "app_password_here" \
+  --auto-publish
+
+INTG_ID=$(balzac --json integrations list | jq -r '.integrations[0].id')
+echo "Integration $INTG_ID created, testing connection..."
+sleep 5
+
+STATUS=$(balzac --json integrations get "$INTG_ID" | jq -r '.integration.status')
+echo "Connection status: $STATUS"
+```
+
+### Pattern 8: Error Handling and Retry
 
 ```bash
 #!/bin/bash
@@ -401,7 +469,7 @@ balzac keywords list
 |--------|---------|
 | Accept suggestion (starts article writing) | 5 |
 | Create briefing (starts article writing) | 5 |
-| Rewrite article | 5 |
+| Rewrite article | 3 |
 | Regenerate picture | 1 |
 
 If credits are insufficient, article status will be `waiting_for_credits`.
@@ -415,6 +483,7 @@ Several operations are asynchronous:
 - **Article writing** (poll with `articles get` or use `write --wait`)
 - **Article rewrite** (poll with `articles get`)
 - **Picture regeneration** (poll with `articles get`)
+- **Integration connection test** (poll with `integrations get` for status `up`/`down`)
 
 ---
 
@@ -462,10 +531,18 @@ balzac briefings create --topic "Topic"                     # Write (5 cr)
 # Articles
 balzac articles list --status done                          # Done articles
 balzac articles get <id>                                    # Full content
-balzac articles rewrite <id>                                # Rewrite (5 cr)
+balzac articles rewrite <id>                                # Rewrite (3 cr)
 balzac articles regenerate-picture <id>                     # Picture (1 cr)
 balzac articles export <id> --format markdown               # Export
 balzac articles publish <id> --integration <int-id>         # Publish
+
+# Integrations
+balzac integrations list                                    # List
+balzac integrations create --service wordpress --name "WP"  # Create
+balzac integrations get <id>                                # Details
+balzac integrations reconnect <id>                          # Re-test
+balzac integrations lookup webflow-sites --token "tok"      # Discover
+balzac integrations delete <id>                             # Delete
 
 # Shortcut
 balzac write "Topic" --wait                                 # Topic → article

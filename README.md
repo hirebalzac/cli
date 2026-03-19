@@ -231,6 +231,35 @@ balzac links get <link-id>
 balzac links remove <link-id>
 ```
 
+### Integrations
+
+```bash
+# List integrations
+balzac integrations list
+
+# Create a WordPress integration
+balzac integrations create --service wordpress --name "My Blog" \
+  --wordpress-url https://myblog.com --wordpress-username admin \
+  --wordpress-password "app_pass_here" --auto-publish
+
+# Discover Webflow resources before creating integration
+balzac integrations lookup webflow-sites --token "wf_token"
+balzac integrations lookup webflow-collections --token "wf_token" --site-id "site_123"
+
+# Create Webhook integration
+balzac integrations create --service webhook --name "My Webhook" \
+  --webhook-url https://example.com/hook
+
+# Reconnect / test connection
+balzac integrations reconnect <id>
+
+# Get integration details
+balzac integrations get <id>
+
+# Delete integration
+balzac integrations delete <id>
+```
+
 ### Settings
 
 ```bash
