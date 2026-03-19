@@ -1,6 +1,6 @@
 {
   "name": "balzac-cli",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "CLI for the Balzac AI content platform — manage workspaces, keywords, suggestions, articles, and more from the command line.",
   "type": "module",
   "bin": {
