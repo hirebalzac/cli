@@ -10,10 +10,6 @@ The Balzac CLI provides a complete interface to the [Balzac API](https://develop
 
 ```bash
 npm install -g balzac-cli
-# or
-pnpm install -g balzac-cli
-# or
-yarn global add balzac-cli
 ```
 
 ---

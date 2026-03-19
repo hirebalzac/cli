@@ -24,13 +24,36 @@ export function registerAuthCommands(program: Command) {
     .argument('[key]', 'API key (omit to be prompted)')
     .action(async (key?: string) => {
       try {
-        const apiKey = key || (await prompt('Enter your Balzac API key: '));
+        if (!key) {
+          console.log('');
+          console.log(chalk.bold('  Welcome to Balzac CLI'));
+          console.log(chalk.dim('  Generate an API key from Settings → API Keys in the Balzac app.'));
+          console.log('');
+        }
+        const apiKey = key || (await prompt('  Enter your API key: '));
         if (!apiKey) {
           printError(new Error('No API key provided.'));
           process.exit(1);
         }
+
         setApiKey(apiKey);
-        printSuccess('API key saved to ' + chalk.dim(getConfigPath()));
+
+        try {
+          const res = await client.get<{ workspaces: { name: string }[] }>('/workspaces', { per_page: 1 });
+          const count = res.data.workspaces?.length || 0;
+          console.log('');
+          printSuccess('Authenticated successfully.');
+          console.log(chalk.dim('  Key saved to ') + getConfigPath());
+          if (count > 0) {
+            console.log(chalk.dim('  Run ') + chalk.bold('balzac workspaces list') + chalk.dim(' to get started.'));
+          }
+          console.log('');
+        } catch {
+          clearApiKey();
+          console.log('');
+          printError(new Error('Invalid API key. Please check your key and try again.'));
+          process.exit(1);
+        }
       } catch (err) {
         printError(err);
         process.exit(1);
