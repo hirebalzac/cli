@@ -15,7 +15,7 @@ balzac --version
 
 ### For AI Agents
 
-Install the Balzac skill for your AI agent (Cursor, Claude Code, Codex, etc.):
+Install the Balzac skill for your AI agent (Cursor, Claude Code, OpenClaw, etc.):
 
 ```bash
 npx skills add vincenzor/balzac-cli
