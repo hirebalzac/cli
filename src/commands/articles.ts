@@ -149,12 +149,14 @@ export function registerArticlesCommands(program: Command) {
     .description('Regenerate article picture (costs 1 credit)')
     .argument('<id>', 'Article ID')
     .option('-w, --workspace <id>', 'Workspace ID')
-    .option('--style <s>', 'Picture style override')
-    .option('--instructions <text>', 'Generation instructions')
+    .option('--mode <mode>', 'Picture mode: title (title overlay), stock (stock photo), ai (AI generated)')
+    .option('--style <s>', 'Picture style override (for ai mode)')
+    .option('--instructions <text>', 'Generation instructions (for ai mode)')
     .action(async (id, opts) => {
       try {
         const ws = resolveWorkspace(opts.workspace);
         const body: Record<string, unknown> = {};
+        if (opts.mode) body.picture_mode = opts.mode;
         if (opts.style) body.pictures_style = opts.style;
         if (opts.instructions) body.additional_instructions = opts.instructions;
 

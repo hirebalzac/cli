@@ -15,6 +15,9 @@ const FIELDS = [
   { key: 'target_audience', label: 'Target Audience' },
   { key: 'theme', label: 'Theme' },
   { key: 'pictures_style', label: 'Pictures Style' },
+  { key: 'title_based_featured_image', label: 'Title Overlay' },
+  { key: 'brand_color', label: 'Brand Color' },
+  { key: 'title_font', label: 'Title Font' },
   { key: 'max_articles_per_period', label: 'Max Articles/Period' },
   { key: 'max_articles_period', label: 'Period' },
   { key: 'auto_accept_suggestions', label: 'Auto-accept Suggestions' },
@@ -73,6 +76,9 @@ export function registerWorkspacesCommands(program: Command) {
     .option('--no-auto-accept-keywords', 'Require manual keyword review')
     .option('--auto-accept-suggestions', 'Auto-accept generated suggestions')
     .option('--pictures-style <style>', 'Image style')
+    .option('--title-based-image', 'Enable title overlay mode for cover images')
+    .option('--brand-color <hex>', 'Brand color hex code (e.g. #FF5500)')
+    .option('--title-font <font>', 'Title font (montserrat/playfair/poppins/lora/oswald)')
     .option('--max-articles <n>', 'Max articles per period')
     .option('--period <p>', 'Article limit period (day/week/month)')
     .option('--wait', 'Wait for workspace setup to complete')
@@ -85,6 +91,9 @@ export function registerWorkspacesCommands(program: Command) {
         if (opts.autoAcceptKeywords !== undefined) body.auto_accept_keywords = opts.autoAcceptKeywords;
         if (opts.autoAcceptSuggestions) body.auto_accept_suggestions = true;
         if (opts.picturesStyle) body.pictures_style = opts.picturesStyle;
+        if (opts.titleBasedImage) body.title_based_featured_image = true;
+        if (opts.brandColor) body.brand_color = opts.brandColor;
+        if (opts.titleFont) body.title_font = opts.titleFont;
         if (opts.maxArticles) body.max_articles_per_period = Number(opts.maxArticles);
         if (opts.period) body.max_articles_period = opts.period;
 
@@ -119,6 +128,10 @@ export function registerWorkspacesCommands(program: Command) {
     .option('--description <desc>', 'Description')
     .option('--language <code>', 'Language')
     .option('--pictures-style <style>', 'Image style')
+    .option('--title-based-image', 'Enable title overlay mode for cover images')
+    .option('--no-title-based-image', 'Disable title overlay mode')
+    .option('--brand-color <hex>', 'Brand color hex code (e.g. #FF5500)')
+    .option('--title-font <font>', 'Title font (montserrat/playfair/poppins/lora/oswald)')
     .option('--max-articles <n>', 'Max articles per period')
     .option('--period <p>', 'Period')
     .action(async (id, opts) => {
@@ -128,6 +141,9 @@ export function registerWorkspacesCommands(program: Command) {
         if (opts.description) body.description = opts.description;
         if (opts.language) body.language = opts.language;
         if (opts.picturesStyle) body.pictures_style = opts.picturesStyle;
+        if (opts.titleBasedImage !== undefined) body.title_based_featured_image = opts.titleBasedImage;
+        if (opts.brandColor) body.brand_color = opts.brandColor;
+        if (opts.titleFont) body.title_font = opts.titleFont;
         if (opts.maxArticles) body.max_articles_per_period = Number(opts.maxArticles);
         if (opts.period) body.max_articles_period = opts.period;
 

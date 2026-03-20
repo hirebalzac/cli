@@ -12,6 +12,9 @@ const FIELDS = [
   { key: 'usage', label: 'Usage' },
   { key: 'theme', label: 'Theme' },
   { key: 'pictures_style', label: 'Pictures Style' },
+  { key: 'title_based_featured_image', label: 'Title Overlay' },
+  { key: 'brand_color', label: 'Brand Color' },
+  { key: 'title_font', label: 'Title Font' },
   { key: 'language', label: 'Language' },
   { key: 'article_length', label: 'Article Length' },
   { key: 'max_articles_per_period', label: 'Max Articles/Period' },
@@ -50,6 +53,10 @@ export function registerSettingsCommands(program: Command) {
     .option('--language <code>', 'Language')
     .option('--article-length <l>', 'Article length')
     .option('--pictures-style <s>', 'Pictures style')
+    .option('--title-based-image', 'Enable title overlay mode for cover images')
+    .option('--no-title-based-image', 'Disable title overlay mode')
+    .option('--brand-color <hex>', 'Brand color hex code (e.g. #FF5500)')
+    .option('--title-font <font>', 'Title font (montserrat/playfair/poppins/lora/oswald)')
     .option('--max-articles <n>', 'Max articles per period')
     .option('--period <p>', 'Period (day/week/month)')
     .option('--tone <id>', 'Preferred tone of voice ID')
@@ -68,6 +75,9 @@ export function registerSettingsCommands(program: Command) {
         if (opts.language) body.language = opts.language;
         if (opts.articleLength) body.article_length = opts.articleLength;
         if (opts.picturesStyle) body.pictures_style = opts.picturesStyle;
+        if (opts.titleBasedImage !== undefined) body.title_based_featured_image = opts.titleBasedImage;
+        if (opts.brandColor) body.brand_color = opts.brandColor;
+        if (opts.titleFont) body.title_font = opts.titleFont;
         if (opts.maxArticles) body.max_articles_per_period = Number(opts.maxArticles);
         if (opts.period) body.max_articles_period = opts.period;
         if (opts.tone) body.prefered_tone_of_voice_id = opts.tone;
