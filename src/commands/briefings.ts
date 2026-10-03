@@ -99,8 +99,8 @@ export function registerBriefingsCommands(program: Command) {
           `/workspaces/${ws}/briefings`, payload
         );
         printSuccess(opts.queue
-          ? 'Briefing created — article queued for later writing.'
-          : 'Briefing created — article writing started.');
+          ? 'Briefing created, article queued for later writing.'
+          : 'Briefing created, article writing started.');
         if (res.status !== 204 && res.data.briefing) {
           printRecord(res.data.briefing as Record<string, unknown>, FIELDS);
         }

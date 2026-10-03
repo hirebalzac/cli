@@ -1,6 +1,6 @@
 ---
 name: balzac
-description: AI content platform CLI — create workspaces, manage SEO keywords, generate article suggestions, write articles, and publish to WordPress, Webflow, Wix, GoHighLevel, or webhooks.
+description: AI content platform CLI. Create workspaces, manage SEO keywords, generate article suggestions, write articles, and publish to WordPress, Webflow, Wix, GoHighLevel, or webhooks.
 homepage: https://developer.hirebalzac.ai
 metadata: {"clawdbot":{"emoji":"✍️","requires":{"bins":["balzac"],"env":["BALZAC_API_KEY"]},"install":[{"id":"npm","kind":"npm","package":"balzac-cli","bins":["balzac"],"label":"Install Balzac CLI (npm)"}]}}
 ---
@@ -29,7 +29,7 @@ balzac config set workspace <workspace-id>   # set default workspace
 ```bash
 # 1. Create workspace from a domain
 balzac workspaces create --domain https://myblog.com --wait
-balzac config set workspace "$(balzac --json workspaces list | jq -r '.workspaces[0].id')"
+balzac config set workspace "$(balzac --json workspaces list | jq -r '.[0].id')"
 
 # 2. Generate suggestions and accept one (5 credits)
 balzac suggestions generate                          # costs 1 credit
@@ -55,7 +55,7 @@ balzac articles publish <id> --integration <integration-id>
 | `balzac briefings create --topic "..."` | Direct write instruction (5 cr) |
 | `balzac write "topic" [--wait]` | Shortcut: briefing + optional wait |
 | `balzac articles list/get/export/rewrite/publish` | Manage articles |
-| `balzac articles regenerate-picture <id>` | New cover image (1 cr) |
+| `balzac articles regenerate-picture <id>` | New cover image (free, 2 per article) |
 | `balzac competitors list/add/remove` | Track competitor domains |
 | `balzac links list/add/remove` | Reference links for articles |
 | `balzac integrations list/create/get/reconnect` | Publishing integrations |
@@ -69,14 +69,16 @@ balzac articles publish <id> --integration <integration-id>
 |--------|---------|
 | Generate 10 suggestions | 1 |
 | Write article (accept suggestion or create briefing) | 5 |
-| Rewrite article | 3 |
-| Regenerate picture | 1 |
+| Rewrite article | Free, 2 per article |
+| Regenerate picture (new cover) | Free, 2 per article |
 
 ## Key Notes
 
 - Use `--json` flag for scriptable JSON output; pipe to `jq`.
 - Use `-w <id>` or `balzac config set workspace <id>` for workspace-scoped commands.
-- Article writing is async — use `write --wait` or poll `articles get <id>`.
-- Workspace creation is async — use `--wait` flag.
+- Article writing is async: use `write --wait` or poll `articles get <id>`.
+- Workspace creation is async: use `--wait` flag.
 - Supported integrations: WordPress, Webflow, Wix, GoHighLevel, Webhook.
+- `articles get` shows the live URL and the publications; `articles publish` prints the new publication.
+- `auth status` shows the account, available credits, key name and role.
 - Run `balzac <command> --help` for full option details.

@@ -5,6 +5,42 @@ import { client } from '../client.js';
 import { printSuccess, printError, printInfo, isJsonMode, printJson } from '../output.js';
 import { createInterface } from 'readline';
 
+// GET /me: the account, its credits and the credentials making the request.
+interface Me {
+  company?: { id: string; name: string; available_credits: number };
+  user?: { id: string; name: string; email: string; role: string } | null;
+  auth?: { type: string; name?: string; client_name?: string | null; admin?: boolean };
+}
+
+function line(label: string, value: string) {
+  console.log(chalk.dim(`  ${(label + ':').padEnd(9)}`) + value);
+}
+
+function printMe(me: Me, masked: string) {
+  printSuccess('Authenticated');
+  if (me.company) {
+    line('Account', me.company.name);
+    line('Credits', `${me.company.available_credits} available`);
+  }
+  const auth = me.auth;
+  if (auth?.type === 'oauth') {
+    line('Auth', 'OAuth token' + (auth.client_name ? ` (${auth.client_name})` : ''));
+  } else if (auth) {
+    line('Auth', 'API key' + (auth.name ? ` "${auth.name}"` : ''));
+  }
+  if (me.user) {
+    line('User', `${me.user.name} <${me.user.email}>`);
+    line('Role', me.user.role === 'admin' ? 'admin' : 'member');
+  } else if (auth?.type === 'api_key') {
+    line('Role', 'admin (API keys count as admin)');
+  }
+  if (auth) {
+    line('Admin', auth.admin ? 'yes' : 'no (can\'t manage integrations or delete workspaces)');
+  }
+  line('Key', masked);
+  line('API', getApiUrl());
+}
+
 function prompt(question: string): Promise<string> {
   const rl = createInterface({ input: process.stdin, output: process.stdout });
   return new Promise((resolve) => {
@@ -81,7 +117,7 @@ export function registerAuthCommands(program: Command) {
 
   auth
     .command('status')
-    .description('Show authentication status')
+    .description('Show authentication status: account, credits, key name, role and admin flag')
     .action(async () => {
       try {
         const key = getApiKey();
@@ -96,13 +132,18 @@ export function registerAuthCommands(program: Command) {
 
         const masked = key.slice(0, 6) + '…' + key.slice(-4);
         try {
-          await client.get('/workspaces', { per_page: 1 });
+          let me: Me = {};
+          try {
+            me = (await client.get<Me>('/me')).data;
+          } catch (e: unknown) {
+            // An API without GET /me: check the key the old way.
+            if ((e as { status?: number }).status !== 404) throw e;
+            await client.get('/workspaces', { per_page: 1 });
+          }
           if (isJsonMode()) {
-            printJson({ authenticated: true, key: masked, api_url: getApiUrl() });
+            printJson({ authenticated: true, key: masked, api_url: getApiUrl(), ...me });
           } else {
-            printSuccess('Authenticated');
-            console.log(chalk.dim('  Key: ') + masked);
-            console.log(chalk.dim('  API: ') + getApiUrl());
+            printMe(me, masked);
           }
         } catch (e: unknown) {
           const err = e as Error & { status?: number; type?: string };

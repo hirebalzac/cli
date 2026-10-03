@@ -36,7 +36,7 @@ export function registerWriteCommand(program: Command) {
         const res = await client.post<Record<string, unknown>>(
           `/workspaces/${ws}/briefings`, { briefing: body }
         );
-        printSuccess('Briefing created — article writing started.');
+        printSuccess('Briefing created, article writing started.');
 
         if (!opts.wait) {
           if (res.status !== 204 && res.data.briefing) {

@@ -91,7 +91,7 @@ export function registerSuggestionsCommands(program: Command) {
       try {
         const ws = resolveWorkspace(opts.workspace);
         const res = await client.post<{ suggestion: Record<string, unknown> }>(`/workspaces/${ws}/suggestions/${id}/accept`);
-        printSuccess('Suggestion accepted — article writing started.');
+        printSuccess('Suggestion accepted, article writing started.');
         if (res.status !== 204 && res.data.suggestion) {
           printRecord(res.data.suggestion, FIELDS);
         }

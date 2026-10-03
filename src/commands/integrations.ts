@@ -1,7 +1,10 @@
 import { Command } from 'commander';
 import { client } from '../client.js';
 import { resolveWorkspace } from '../config.js';
-import { printTable, printRecord, printPagination, printSuccess, printError, truncate } from '../output.js';
+import {
+  printTable, printRecord, printPagination, printSuccess, printError, truncate,
+  isJsonMode, isQuietMode,
+} from '../output.js';
 
 const FIELDS = [
   { key: 'id', label: 'ID' },
@@ -11,6 +14,22 @@ const FIELDS = [
   { key: 'auto_publish', label: 'Auto-publish' },
   { key: 'created_at', label: 'Created' },
 ];
+
+const UPDATE_HELP = `
+Moving a URL needs its secret again. Balzac sends some secrets to a URL stored on
+the same integration, so a stored secret only follows its URL when the same
+command sends it again:
+
+  --wordpress-url points to another site (scheme, host or port)  -> --wordpress-password
+  --webhook-url changes (scheme, host, port, path or query)       -> --webhook-token
+
+Without it, the update fails with 422 validation_failed and the details name the
+secret to send. A new path on the same WordPress site, or a new webhook URL on an
+integration without a bearer token, needs nothing more.
+
+Example:
+  $ balzac integrations update <id> --wordpress-url https://newblog.com \\
+      --wordpress-password "app_pass_here"`;
 
 function statusColor(v: unknown): string {
   const s = String(v);
@@ -51,7 +70,7 @@ export function registerIntegrationsCommands(program: Command) {
 
   // ── Get ───────────────────────────────────────────────────
   intg.command('get')
-    .description('Get integration details')
+    .description('Get integration details (credentials are never returned)')
     .argument('<id>', 'Integration ID')
     .option('-w, --workspace <id>', 'Workspace ID')
     .action(async (id, opts) => {
@@ -59,6 +78,8 @@ export function registerIntegrationsCommands(program: Command) {
         const ws = resolveWorkspace(opts.workspace);
         const res = await client.get<{ integration: Record<string, unknown> }>(`/workspaces/${ws}/integrations/${id}`);
         printRecord(res.data.integration, FIELDS);
+        // --json and -q print the record once; the sections below are for people.
+        if (isJsonMode() || isQuietMode()) return;
 
         const intgData = res.data.integration;
         const service = intgData.service as string;
@@ -166,7 +187,7 @@ export function registerIntegrationsCommands(program: Command) {
           `/workspaces/${ws}/integrations`,
           { integration: body }
         );
-        printSuccess(`Integration created (status: pending — connection test running).`);
+        printSuccess('Integration created (status: pending, connection test running).');
         printRecord(res.data.integration, FIELDS);
       } catch (err) {
         printError(err);
@@ -176,11 +197,12 @@ export function registerIntegrationsCommands(program: Command) {
 
   // ── Update ────────────────────────────────────────────────
   intg.command('update')
-    .description('Update an integration')
+    .description('Update an integration (a moved URL needs its secret in the same command)')
+    .addHelpText('after', UPDATE_HELP)
     .argument('<id>', 'Integration ID')
     .option('--name <name>', 'Integration name')
     .option('--auto-publish <bool>', 'Enable/disable auto-publish')
-    .option('--wordpress-url <url>', 'WordPress site URL')
+    .option('--wordpress-url <url>', 'WordPress site URL (pointing it to another site needs --wordpress-password in the same command)')
     .option('--wordpress-username <user>', 'WordPress username')
     .option('--wordpress-password <pass>', 'WordPress application password')
     .option('--webflow-token <token>', 'Webflow API token')
@@ -196,7 +218,7 @@ export function registerIntegrationsCommands(program: Command) {
     .option('--ghl-author-id <id>', 'GoHighLevel author ID')
     .option('--ghl-category-id <id>', 'GoHighLevel category ID')
     .option('--ghl-pub-status <status>', 'GoHighLevel publication status')
-    .option('--webhook-url <url>', 'Webhook URL')
+    .option('--webhook-url <url>', 'Webhook URL (changing it needs --webhook-token in the same command when the integration has one)')
     .option('--webhook-token <token>', 'Webhook bearer token')
     .option('-w, --workspace <id>', 'Workspace ID')
     .action(async (id, opts) => {

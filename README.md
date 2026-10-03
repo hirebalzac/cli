@@ -3,7 +3,7 @@
 [![npm version](https://img.shields.io/npm/v/balzac-cli.svg)](https://www.npmjs.com/package/balzac-cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
-**AI content platform CLI** — manage workspaces, keywords, suggestions, articles, and more from the command line.
+**AI content platform CLI**: manage workspaces, keywords, suggestions, articles, and more from the command line.
 
 Built for AI coding agents ([Claude Code](https://claude.com/product/claude-code), [Claude Cowork](https://claude.com/product/cowork), [Codex](https://openai.com/codex/), [Mistral Vibe](https://vibe.mistral.ai), [Cursor](https://cursor.com), [Windsurf](https://windsurf.com), [Cline](https://cline.bot), [Aider](https://aider.chat)) and developers alike, the Balzac CLI provides a complete interface to the [Balzac API](https://developer.hirebalzac.ai), enabling automated content creation, SEO keyword management, and article publishing across integrations.
 
@@ -66,7 +66,7 @@ balzac auth login bz_abc123...
 # Remove stored key
 balzac auth logout
 
-# Check authentication status
+# Check authentication status: account, credits, key name, role and admin flag
 balzac auth status
 ```
 
@@ -133,7 +133,7 @@ balzac suggestions get <suggestion-id>
 # Generate new suggestions (costs 1 credit)
 balzac suggestions generate
 
-# Accept a suggestion (starts article writing — costs 5 credits)
+# Accept a suggestion (starts article writing, costs 5 credits)
 balzac suggestions accept <suggestion-id>
 
 # Reject a suggestion
@@ -148,7 +148,7 @@ Direct write instructions. Creating a briefing immediately starts the article wr
 # List briefings
 balzac briefings list
 
-# Create a briefing (starts writing — costs 5 credits)
+# Create a briefing (starts writing, costs 5 credits)
 balzac briefings create --topic "How to use AI for content marketing in 2026"
 balzac briefings create --topic "SEO tips" --type listicle --length long
 
@@ -162,37 +162,39 @@ balzac briefings delete <briefing-id>
 ### Articles
 
 ```bash
-# List articles
+# List articles (with their live URL once published)
 balzac articles list
 balzac articles list --status done --published false
 
-# Get article (includes HTML content when done)
+# Get article: details, live URL and publications (--json includes the HTML content when done)
 balzac articles get <article-id>
 
 # Update article metadata
 balzac articles update <article-id> --title "New Title" --slug "new-slug"
 
-# Rewrite article (costs 3 credits)
+# Rewrite article (free, 2 per article)
 balzac articles rewrite <article-id>
 balzac articles rewrite <article-id> --length long --instructions "More technical depth"
 
-# Regenerate article picture (costs 1 credit)
+# Regenerate article picture (free, 2 per article)
 balzac articles regenerate-picture <article-id>
 balzac articles regenerate-picture <article-id> --style watercolor --instructions "Dark background"
 
-# Publish
+# Publish now: prints the new publication (-q prints only its ID)
 balzac articles publish <article-id> --integration <integration-id>
 
-# Schedule publication
+# Schedule publication: prints the publication ID that cancel-schedule needs
 balzac articles schedule <article-id> --integration <id> --at "2026-04-01T10:00:00Z"
 
-# Cancel scheduled publication
+# Cancel scheduled publication (articles get lists the publication IDs)
 balzac articles cancel-schedule <article-id> --publication <publication-id>
 
 # Export content
 balzac articles export <article-id> --format markdown
 balzac articles export <article-id> --format html --output article.html
 ```
+
+Publishing runs in the background. `articles get` shows `Published: true` once the platform accepts the post, and the live URL once the platform reports where it went live. Drafts (Webflow or GoHighLevel set to draft) and webhooks that don't answer with a URL never report one. A send that failed isn't reported, so stop checking after a while: if nothing changes, check the integration's status with `balzac integrations get <integration-id>`.
 
 ### Write (Shortcut)
 
@@ -262,10 +264,18 @@ balzac integrations create --service webhook --name "My Webhook" \
   --webhook-token "optional_bearer_secret" \
   --auto-publish
 
+# Update an integration. Pointing it to another WordPress site needs the
+# application password again in the same command, and a new webhook URL needs
+# its bearer token again (when the integration has one).
+balzac integrations update <id> --wordpress-url https://newblog.com \
+  --wordpress-password "app_pass_here"
+balzac integrations update <id> --webhook-url https://example.com/new-hook \
+  --webhook-token "optional_bearer_secret"
+
 # Reconnect / test connection
 balzac integrations reconnect <id>
 
-# Get integration details
+# Get integration details (credentials are never returned)
 balzac integrations get <id>
 
 # Delete integration
@@ -294,6 +304,8 @@ Authorization: Bearer your_token_here
 ```
 
 Your endpoint should respond with `200 OK`. Set `auto_publish` to `true` to receive articles automatically as they are completed, or publish manually with `balzac articles publish <id> --integration <id>`.
+
+To report where the post went live, answer with a JSON object such as `{"url": "https://example.com/blog/article-slug"}`. Balzac saves it as the article's live URL, shown by `balzac articles get` and `balzac articles list`. It also accepts `link`, `permalink` and a few other keys (see the [webhook docs](https://developer.hirebalzac.ai/#section/Webhooks)).
 
 ### Settings
 
@@ -340,20 +352,20 @@ balzac config reset
 
 ## Output Modes
 
-**Default** — Human-friendly colored output with tables
+**Default**: Human-friendly colored output with tables
 
 ```bash
 balzac workspaces list
 ```
 
-**JSON mode** — Raw JSON for scripting and piping
+**JSON mode**: Raw JSON for scripting and piping
 
 ```bash
 balzac --json workspaces list
 balzac --json articles get <id> | jq '.title'
 ```
 
-**Quiet mode** — IDs only
+**Quiet mode**: IDs only
 
 ```bash
 balzac -q workspaces list
@@ -372,7 +384,7 @@ balzac -q workspaces list
 balzac workspaces create --domain https://myblog.com --wait
 
 # 2. Set it as default
-WORKSPACE_ID=$(balzac --json workspaces list | jq -r '.workspaces[0].id')
+WORKSPACE_ID=$(balzac --json workspaces list | jq -r '.[0].id')
 balzac config set workspace "$WORKSPACE_ID"
 
 # 3. Generate suggestions
@@ -382,13 +394,13 @@ balzac suggestions generate
 sleep 30
 
 # 4. Accept the first proposed suggestion
-SUGGESTION_ID=$(balzac --json suggestions list --status proposed | jq -r '.suggestions[0].id')
+SUGGESTION_ID=$(balzac --json suggestions list --status proposed | jq -r '.[0].id')
 balzac suggestions accept "$SUGGESTION_ID"
 
 # 5. Wait for article to complete
 echo "Article writing started. Polling..."
 while true; do
-  STATUS=$(balzac --json articles list --status done | jq -r '.articles | length')
+  STATUS=$(balzac --json articles list --status done | jq -r 'length')
   if [ "$STATUS" -gt "0" ]; then
     echo "Article done!"
     balzac articles list --status done
@@ -404,7 +416,7 @@ done
 #!/bin/bash
 
 balzac --json suggestions list --status proposed | \
-  jq -r '.suggestions[].id' | \
+  jq -r '.[].id' | \
   while read -r id; do
     echo "Accepting $id..."
     balzac suggestions accept "$id"
@@ -420,7 +432,7 @@ balzac --json suggestions list --status proposed | \
 mkdir -p exports
 
 balzac --json articles list --status done | \
-  jq -r '.articles[] | "\(.id) \(.slug)"' | \
+  jq -r '.[] | "\(.id) \(.slug)"' | \
   while read -r id slug; do
     echo "Exporting $slug..."
     balzac articles export "$id" --format markdown --output "exports/${slug}.md"
@@ -440,7 +452,7 @@ balzac write "best AI writing tools 2026" --type listicle --length long --wait
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `BALZAC_API_KEY` | Yes* | — | Your Balzac API key (alternative to `balzac auth login`) |
+| `BALZAC_API_KEY` | Yes* | None | Your Balzac API key (alternative to `balzac auth login`) |
 | `BALZAC_API_URL` | No | `https://api.hirebalzac.ai/v1` | Custom API endpoint |
 
 \* Required unless stored via `balzac auth login`
@@ -453,8 +465,10 @@ balzac write "best AI writing tools 2026" --type listicle --length long --wait
 |--------|---------|
 | Writing an article (accepting suggestion or creating briefing) | 5 |
 | Generating 10 new suggestions | 1 |
-| Rewriting an article | 3 |
-| Regenerating a picture | 1 |
+| Rewriting an article | Free, 2 per article |
+| Regenerating a picture (new cover) | Free, 2 per article |
+
+The cover written with the article doesn't count toward its 2 new covers. Only one rewrite and one new cover can run at a time per article (`409 conflict` while one runs), and once an article has used its 2, the API returns `422 free_limit_reached`. Check your available credits with `balzac auth status`.
 
 ---
 
@@ -467,16 +481,18 @@ The CLI provides clear error messages with colored output:
 | `No API key configured` | Run `balzac auth login` or set `BALZAC_API_KEY` |
 | `No workspace specified` | Use `-w <id>` or `balzac config set workspace <id>` |
 | `unauthorized` | API key is invalid or expired |
-| `insufficient_credits` | Not enough credits — check your billing in the Balzac app |
-| `not_found` | Resource doesn't exist — check the ID |
-| `conflict` | Action not allowed (e.g. accepting already accepted suggestion) |
-| `validation_failed` | Invalid parameters — check the `details` in the error |
-| `limit_reached` | Keyword limit reached — upgrade plan or disable existing keywords |
-| `rate_limited` | Too many requests — CLI auto-retries with backoff |
+| `insufficient_credits` | Not enough credits: check your billing in the Balzac app |
+| `not_found` | Resource doesn't exist: check the ID |
+| `conflict` | Action not allowed (e.g. accepting an already accepted suggestion, or a rewrite or new cover already running) |
+| `validation_failed` | Invalid parameters: check the `details` in the error (e.g. a moved integration URL without its secret) |
+| `limit_reached` | Keyword limit reached: upgrade plan or disable existing keywords |
+| `free_limit_reached` | The article has used its 2 free rewrites or 2 free new covers |
+| `plan_limit_reached` | Your plan's website limit is reached: upgrade, or delete a workspace you no longer need |
+| `rate_limited` | Too many requests: CLI auto-retries with backoff |
 
 Exit codes:
-- **0** — Success
-- **1** — Error
+- **0**: Success
+- **1**: Error
 
 ---
 
@@ -486,6 +502,7 @@ The CLI maps to these Balzac API endpoints:
 
 | CLI Command | Method | API Endpoint |
 |-------------|--------|-------------|
+| `auth status` | GET | `/me` |
 | `workspaces list` | GET | `/workspaces` |
 | `workspaces create` | POST | `/workspaces` |
 | `workspaces get` | GET | `/workspaces/{id}` |
@@ -508,6 +525,7 @@ The CLI maps to these Balzac API endpoints:
 | `articles regenerate-picture` | POST | `/workspaces/{id}/articles/{id}/regenerate_picture` |
 | `articles publish` | POST | `/workspaces/{id}/articles/{id}/publish` |
 | `articles schedule` | POST | `/workspaces/{id}/articles/{id}/schedule` |
+| `articles cancel-schedule` | DELETE | `/workspaces/{id}/articles/{id}/cancel_schedule` |
 | `articles export` | GET | `/workspaces/{id}/articles/{id}/export` |
 | `competitors list` | GET | `/workspaces/{id}/competitors` |
 | `competitors add` | POST | `/workspaces/{id}/competitors` |
@@ -572,7 +590,7 @@ node dist/index.js --help
 ```bash
 # Auth
 balzac auth login                                           # Store API key
-balzac auth status                                          # Check auth
+balzac auth status                                          # Account, credits, role
 
 # Workspaces
 balzac workspaces list                                      # List workspaces
@@ -595,9 +613,9 @@ balzac briefings create --topic "My topic"                  # Write article (5 c
 
 # Articles
 balzac articles list --status done                          # Completed articles
-balzac articles get <id>                                    # Full content
-balzac articles rewrite <id>                                # Rewrite (3 credits)
-balzac articles regenerate-picture <id>                     # New picture (1 credit)
+balzac articles get <id>                                    # Live URL, publications
+balzac articles rewrite <id>                                # Rewrite (free, 2 per article)
+balzac articles regenerate-picture <id>                     # New picture (free, 2 per article)
 balzac articles export <id> --format markdown               # Export
 balzac articles publish <id> --integration <int-id>         # Publish
 

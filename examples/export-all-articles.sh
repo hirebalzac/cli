@@ -10,7 +10,7 @@ mkdir -p "$OUTPUT_DIR"
 echo "Exporting articles to $OUTPUT_DIR/..."
 
 balzac --json articles list --status done --per-page 100 | \
-  jq -r '.articles[] | "\(.id) \(.slug // .id)"' | \
+  jq -r '.[] | "\(.id) \(.slug // .id)"' | \
   while read -r id slug; do
     echo "  $slug"
     balzac articles export "$id" --format markdown --output "$OUTPUT_DIR/${slug}.md"
