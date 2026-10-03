@@ -3,7 +3,7 @@
 [![npm version](https://img.shields.io/npm/v/balzac-cli.svg)](https://www.npmjs.com/package/balzac-cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
-**AI content platform CLI** — manage workspaces, keywords, suggestions, articles, and more from the command line.
+**AI content platform CLI**: manage workspaces, keywords, suggestions, articles, and more from the command line.
 
 Built for AI coding agents ([Claude Code](https://claude.com/product/claude-code), [Claude Cowork](https://claude.com/product/cowork), [Codex](https://openai.com/codex/), [Mistral Vibe](https://vibe.mistral.ai), [Cursor](https://cursor.com), [Windsurf](https://windsurf.com), [Cline](https://cline.bot), [Aider](https://aider.chat)) and developers alike, the Balzac CLI provides a complete interface to the [Balzac API](https://developer.hirebalzac.ai), enabling automated content creation, SEO keyword management, and article publishing across integrations.
 
@@ -133,7 +133,7 @@ balzac suggestions get <suggestion-id>
 # Generate new suggestions (costs 1 credit)
 balzac suggestions generate
 
-# Accept a suggestion (starts article writing — costs 5 credits)
+# Accept a suggestion (starts article writing, costs 5 credits)
 balzac suggestions accept <suggestion-id>
 
 # Reject a suggestion
@@ -148,7 +148,7 @@ Direct write instructions. Creating a briefing immediately starts the article wr
 # List briefings
 balzac briefings list
 
-# Create a briefing (starts writing — costs 5 credits)
+# Create a briefing (starts writing, costs 5 credits)
 balzac briefings create --topic "How to use AI for content marketing in 2026"
 balzac briefings create --topic "SEO tips" --type listicle --length long
 
@@ -352,20 +352,20 @@ balzac config reset
 
 ## Output Modes
 
-**Default** — Human-friendly colored output with tables
+**Default**: Human-friendly colored output with tables
 
 ```bash
 balzac workspaces list
 ```
 
-**JSON mode** — Raw JSON for scripting and piping
+**JSON mode**: Raw JSON for scripting and piping
 
 ```bash
 balzac --json workspaces list
 balzac --json articles get <id> | jq '.title'
 ```
 
-**Quiet mode** — IDs only
+**Quiet mode**: IDs only
 
 ```bash
 balzac -q workspaces list
@@ -452,7 +452,7 @@ balzac write "best AI writing tools 2026" --type listicle --length long --wait
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `BALZAC_API_KEY` | Yes* | — | Your Balzac API key (alternative to `balzac auth login`) |
+| `BALZAC_API_KEY` | Yes* | None | Your Balzac API key (alternative to `balzac auth login`) |
 | `BALZAC_API_URL` | No | `https://api.hirebalzac.ai/v1` | Custom API endpoint |
 
 \* Required unless stored via `balzac auth login`
@@ -491,8 +491,8 @@ The CLI provides clear error messages with colored output:
 | `rate_limited` | Too many requests: CLI auto-retries with backoff |
 
 Exit codes:
-- **0** — Success
-- **1** — Error
+- **0**: Success
+- **1**: Error
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: balzac
-description: Balzac is an AI content platform CLI — create workspaces, manage SEO keywords, generate article suggestions, write articles, publish content across integrations, and monitor Google Search Console performance. Supports workspaces, keywords, suggestions, briefings, articles, competitors, links, integrations, search console, settings, and tones of voice.
+description: Balzac is an AI content platform CLI. Create workspaces, manage SEO keywords, generate article suggestions, write articles, publish content across integrations, and monitor Google Search Console performance. Supports workspaces, keywords, suggestions, briefings, articles, competitors, links, integrations, search console, settings, and tones of voice.
 homepage: https://developer.hirebalzac.ai
 metadata: {"clawdbot":{"emoji":"✍️","requires":{"bins":["balzac"],"env":["BALZAC_API_KEY"]}}}
 ---
@@ -30,12 +30,12 @@ official website: https://hirebalzac.ai
 
 The fundamental pattern for using the Balzac CLI:
 
-1. **Authenticate** — Set your API key
-2. **Create workspace** — From a domain, Balzac auto-analyzes the site
-3. **Manage keywords** — Add, enable/disable keywords
-4. **Generate content** — Generate suggestions, accept them, or create briefings directly
-5. **Manage articles** — List, export, rewrite, regenerate pictures, publish
-6. **Monitor performance** — View Google Search Console data (clicks, impressions, CTR, position)
+1. **Authenticate**: Set your API key
+2. **Create workspace**: From a domain, Balzac auto-analyzes the site
+3. **Manage keywords**: Add, enable/disable keywords
+4. **Generate content**: Generate suggestions, accept them, or create briefings directly
+5. **Manage articles**: List, export, rewrite, regenerate pictures, publish
+6. **Monitor performance**: View Google Search Console data (clicks, impressions, CTR, position)
 
 ```bash
 # 1. Authenticate
@@ -143,7 +143,7 @@ balzac suggestions get <suggestion-id>
 # Generate 10 new suggestions (costs 1 credit, async)
 balzac suggestions generate
 
-# Accept suggestion — starts article writing (costs 5 credits)
+# Accept suggestion: starts article writing (costs 5 credits)
 balzac suggestions accept <suggestion-id>
 
 # Reject suggestion
@@ -156,11 +156,11 @@ balzac suggestions reject <suggestion-id>
 # List briefings
 balzac briefings list
 
-# Create briefing — immediately starts writing (costs 5 credits)
+# Create briefing: immediately starts writing (costs 5 credits)
 balzac briefings create --topic "How to use AI for content marketing"
 balzac briefings create --topic "SEO tips" --type listicle --length long
 
-# Create briefing — queue for later writing (respects articles-per-week schedule)
+# Create briefing: queue for later writing (respects articles-per-week schedule)
 balzac briefings create --topic "Content strategy guide" --queue
 
 # Get briefing details
@@ -301,11 +301,11 @@ Requires an active Google Search Console integration on the workspace (connected
 balzac search-console overview
 balzac gsc overview --start-date 2026-01-01 --end-date 2026-03-25
 
-# Top search queries — ranked by impressions
+# Top search queries, ranked by impressions
 balzac search-console queries
 balzac gsc queries --start-date 2026-03-01 --per-page 50
 
-# Top pages — ranked by clicks
+# Top pages, ranked by clicks
 balzac search-console pages
 balzac gsc pages --page 2 --per-page 50
 
@@ -315,9 +315,9 @@ balzac gsc daily --start-date 2026-02-01 --end-date 2026-03-25
 ```
 
 All Search Console commands accept:
-- `-w, --workspace <id>` — Workspace ID (or set default)
-- `--start-date <YYYY-MM-DD>` — Start of period (default: 30 days before end date)
-- `--end-date <YYYY-MM-DD>` — End of period (default: today)
+- `-w, --workspace <id>`: Workspace ID (or set default)
+- `--start-date <YYYY-MM-DD>`: Start of period (default: 30 days before end date)
+- `--end-date <YYYY-MM-DD>`: End of period (default: today)
 
 The `queries` and `pages` commands also support `--page` and `--per-page` for pagination.
 
@@ -375,7 +375,7 @@ sleep 30
 SUGGESTION_ID=$(balzac --json suggestions list --status proposed | jq -r '.[0].id')
 if [ "$SUGGESTION_ID" != "null" ]; then
   balzac suggestions accept "$SUGGESTION_ID"
-  echo "Accepted suggestion $SUGGESTION_ID — article writing started"
+  echo "Accepted suggestion $SUGGESTION_ID, article writing started"
 else
   echo "No suggestions yet, try again shortly"
 fi
@@ -384,7 +384,7 @@ fi
 ### Pattern 3: Direct Article Writing
 
 ```bash
-# Simplest way to write an article — one command
+# Simplest way to write an article: one command
 balzac write "Best AI writing tools for 2026" --wait
 ```
 
@@ -499,7 +499,7 @@ balzac --json gsc daily --start-date 2026-01-01 --end-date 2026-03-25
 
 ```bash
 #!/bin/bash
-# Find queries with high impressions but low CTR — optimization opportunities
+# Find queries with high impressions but low CTR: optimization opportunities
 balzac --json gsc queries --per-page 100 | \
   jq '[.[] | select(.impressions > 50 and .ctr < 2)] | sort_by(-.impressions) | .[:10]'
 ```
@@ -535,9 +535,9 @@ done
 
 ### Output Modes
 
-- **Default** — Human-friendly colored tables and spinners
-- `--json` — Raw JSON output for piping to `jq` or other tools
-- `-q` / `--quiet` — IDs only, one per line
+- **Default**: Human-friendly colored tables and spinners
+- `--json`: Raw JSON output for piping to `jq` or other tools
+- `-q` / `--quiet`: IDs only, one per line
 
 All examples in this doc use `--json` mode with `jq` for scriptability. `--json` prints the records themselves, without the API's wrapper: list commands print an array (`jq '.[0].id'`), and get, create and update commands print the record (`jq '.status'`).
 
@@ -590,20 +590,20 @@ Several operations are asynchronous:
 
 ## Common Gotchas
 
-1. **API key not set** — Always `export BALZAC_API_KEY=key` or `balzac auth login` before using CLI
-2. **No default workspace** — Run `balzac config set workspace <id>` or pass `-w <id>` to every command
-3. **Workspace not ready** — After `workspaces create`, the workspace goes through `new` → `running` → `imported`. Use `--wait` or poll `workspaces get` until status is `imported` or `ready`
+1. **API key not set**: Always `export BALZAC_API_KEY=key` or `balzac auth login` before using CLI
+2. **No default workspace**: Run `balzac config set workspace <id>` or pass `-w <id>` to every command
+3. **Workspace not ready**: After `workspaces create`, the workspace goes through `new` → `running` → `imported`. Use `--wait` or poll `workspaces get` until status is `imported` or `ready`
 4. **Insufficient credits**: the API returns `402 Payment Required` with `type: insufficient_credits` when you don't have enough credits. Article writing costs 5 credits and generating suggestions 1 credit; rewrites and new covers are free (2 per article). The error includes `required` and `available` fields
-5. **Async operations need polling** — Suggestion generation and article writing are asynchronous. Poll the relevant list/get endpoint
-6. **JSON output for scripting** — Always use `--json` flag when piping to `jq` or other tools. Default output is human-formatted and not parseable
-7. **Rate limiting** — API allows 100 requests/minute. CLI auto-retries on 429 with exponential backoff. Add `sleep 1` between batch operations
-8. **Suggestion vs briefing** — Suggestions are AI-generated proposals you accept/reject. Briefings are direct write instructions that start immediately (unless `--queue` is used to defer writing to the workspace schedule)
-9. **Article must be `done` for rewrite/publish** — Check status before calling rewrite, regenerate-picture, or publish
-10. **ISO 8601 dates** — Schedule dates must use format `"2026-04-01T10:00:00Z"`
-11. **Search Console requires web OAuth** — GSC integration is connected via the Balzac web app (OAuth with Google), not via the CLI. Once connected, data syncs daily and is available through `balzac gsc` commands
-12. **GSC data has ~3 day delay** — Google Search Console data is typically 2-3 days behind. The most recent days will show zero
-13. **GSC query data is privacy-filtered** — Google anonymizes low-volume queries. The sum of query-level data (`gsc queries`) will be lower than site-level totals (`gsc overview`). This is a Google limitation, not a bug
-14. **Search Console returns 412 if not connected** — All `gsc` commands require an active Google Search Console integration. If none is connected, the API returns `412 Precondition Failed`
+5. **Async operations need polling**: Suggestion generation and article writing are asynchronous. Poll the relevant list/get endpoint
+6. **JSON output for scripting**: Always use `--json` flag when piping to `jq` or other tools. Default output is human-formatted and not parseable
+7. **Rate limiting**: API allows 100 requests/minute. CLI auto-retries on 429 with exponential backoff. Add `sleep 1` between batch operations
+8. **Suggestion vs briefing**: Suggestions are AI-generated proposals you accept/reject. Briefings are direct write instructions that start immediately (unless `--queue` is used to defer writing to the workspace schedule)
+9. **Article must be `done` for rewrite/publish**: Check status before calling rewrite, regenerate-picture, or publish
+10. **ISO 8601 dates**: Schedule dates must use format `"2026-04-01T10:00:00Z"`
+11. **Search Console requires web OAuth**: GSC integration is connected via the Balzac web app (OAuth with Google), not via the CLI. Once connected, data syncs daily and is available through `balzac gsc` commands
+12. **GSC data has ~3 day delay**: Google Search Console data is typically 2-3 days behind. The most recent days will show zero
+13. **GSC query data is privacy-filtered**: Google anonymizes low-volume queries. The sum of query-level data (`gsc queries`) will be lower than site-level totals (`gsc overview`). This is a Google limitation, not a bug
+14. **Search Console returns 412 if not connected**: All `gsc` commands require an active Google Search Console integration. If none is connected, the API returns `412 Precondition Failed`
 15. **Free rewrites and covers run out**: each article gets 2 rewrites and 2 new covers. A third returns `422 free_limit_reached`, and starting one while another runs returns `409 conflict`. Requests refused this way count nothing
 16. **Moving an integration URL needs its secret**: `integrations update --wordpress-url` to another site needs `--wordpress-password` in the same command, and a new `--webhook-url` needs `--webhook-token` when the integration has one. Credentials are never returned by `integrations get`
 17. **Workspace limit**: each workspace is a website. At the plan's limit, `workspaces create` returns `422 plan_limit_reached`. Workspaces whose import failed (`not_imported`) don't count

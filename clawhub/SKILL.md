@@ -1,6 +1,6 @@
 ---
 name: balzac
-description: AI content platform CLI — create workspaces, manage SEO keywords, generate article suggestions, write articles, and publish to WordPress, Webflow, Wix, GoHighLevel, or webhooks.
+description: AI content platform CLI. Create workspaces, manage SEO keywords, generate article suggestions, write articles, and publish to WordPress, Webflow, Wix, GoHighLevel, or webhooks.
 homepage: https://developer.hirebalzac.ai
 metadata: {"clawdbot":{"emoji":"✍️","requires":{"bins":["balzac"],"env":["BALZAC_API_KEY"]},"install":[{"id":"npm","kind":"npm","package":"balzac-cli","bins":["balzac"],"label":"Install Balzac CLI (npm)"}]}}
 ---
@@ -76,8 +76,8 @@ balzac articles publish <id> --integration <integration-id>
 
 - Use `--json` flag for scriptable JSON output; pipe to `jq`.
 - Use `-w <id>` or `balzac config set workspace <id>` for workspace-scoped commands.
-- Article writing is async — use `write --wait` or poll `articles get <id>`.
-- Workspace creation is async — use `--wait` flag.
+- Article writing is async: use `write --wait` or poll `articles get <id>`.
+- Workspace creation is async: use `--wait` flag.
 - Supported integrations: WordPress, Webflow, Wix, GoHighLevel, Webhook.
 - `articles get` shows the live URL and the publications; `articles publish` prints the new publication.
 - `auth status` shows the account, available credits, key name and role.
