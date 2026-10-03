@@ -1,7 +1,10 @@
 import { Command } from 'commander';
 import { client } from '../client.js';
 import { resolveWorkspace } from '../config.js';
-import { printTable, printRecord, printPagination, printSuccess, printError, truncate } from '../output.js';
+import {
+  printTable, printRecord, printPagination, printSuccess, printError, truncate,
+  isJsonMode, isQuietMode,
+} from '../output.js';
 
 const FIELDS = [
   { key: 'id', label: 'ID' },
@@ -75,6 +78,8 @@ export function registerIntegrationsCommands(program: Command) {
         const ws = resolveWorkspace(opts.workspace);
         const res = await client.get<{ integration: Record<string, unknown> }>(`/workspaces/${ws}/integrations/${id}`);
         printRecord(res.data.integration, FIELDS);
+        // --json and -q print the record once; the sections below are for people.
+        if (isJsonMode() || isQuietMode()) return;
 
         const intgData = res.data.integration;
         const service = intgData.service as string;
