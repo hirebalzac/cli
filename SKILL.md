@@ -185,7 +185,9 @@ balzac articles get <article-id>
 # Update metadata
 balzac articles update <id> --title "New Title" --slug "new-slug"
 
-# Rewrite article (free, 2 per article; poll articles get until Rewriting is false)
+# Rewrite article (free, 2 per article). Poll articles get until Rewriting is false, and stop
+# after a timeout: a rewrite that never finishes keeps the article blocked (409 on new rewrites);
+# write to hello@hirebalzac.ai if that happens
 balzac articles rewrite <id>
 balzac articles rewrite <id> --length long --instructions "More technical depth"
 
@@ -581,9 +583,9 @@ Several operations are asynchronous:
 - **Keyword generation** (check `keywords list` after ~30s)
 - **Suggestion generation** (check `suggestions list` after ~30s)
 - **Article writing** (poll with `articles get` or use `write --wait`)
-- **Article rewrite** (poll with `articles get`)
+- **Article rewrite** (poll with `articles get` until `Rewriting` is false, and stop after a timeout: a rewrite that fails partway is retried and keeps `rewriting: true`, so new rewrites return `409` until it finishes; if it never finishes, write to hello@hirebalzac.ai)
 - **Picture regeneration** (poll with `articles get`)
-- **Publishing** (poll with `articles get`: `Published` turns true once the platform accepts the post, and the live URL appears when the platform reports it; drafts and webhooks without a URL in their answer never report one)
+- **Publishing** (poll with `articles get`: `Published` turns true once the platform accepts the post, and the live URL appears when the platform reports it; drafts and webhooks without a URL in their answer never report one. Stop after a timeout, because a send that failed isn't reported: if nothing changes, check the integration's status with `integrations get`, since a `down` integration sends nothing)
 - **Integration connection test** (poll with `integrations get` for status `up`/`down`)
 
 ---

@@ -2,7 +2,7 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import { writeFileSync } from 'fs';
 import { client } from '../client.js';
-import { resolveWorkspace } from '../config.js';
+import { resolveWorkspace, getDefaultWorkspace } from '../config.js';
 import {
   printTable, printRecord, printPagination, printSuccess,
   printError, printInfo, printJson, isJsonMode, isQuietMode, formatStatus,
@@ -65,13 +65,24 @@ const SCHEDULED_FIELDS = [
 const REWRITE_HELP = `
 Rewrites are free: each article includes 2, and a rewrite counts when it finishes.
 Only one rewrite runs at a time per article (409 conflict while one runs). Once the
-article has used its 2, the API returns 422 free_limit_reached.`;
+article has used its 2, the API returns 422 free_limit_reached.
+
+Follow it with "balzac articles get <id>" until Rewriting is false, and stop after a
+timeout. A rewrite that fails partway is retried and keeps Rewriting true, so new
+rewrites of the article return 409 until it finishes. If it never finishes, write
+to hello@hirebalzac.ai.`;
 
 const PICTURE_HELP = `
 New covers are free: each article includes 2 on top of the cover written with it,
 and a cover counts when it is generated. Only one runs at a time per article (409
 conflict while one runs). Once the article has used its 2, the API returns 422
 free_limit_reached.`;
+
+// The -w flag for a printed follow-up command, so it still works when pasted without
+// a default workspace (or with another one).
+function workspaceFlag(ws: string): string {
+  return ws !== getDefaultWorkspace() ? ` -w ${ws}` : '';
+}
 
 function publicationsOf(article: Row): Row[] {
   return Array.isArray(article.publications) ? (article.publications as Row[]) : [];
@@ -209,7 +220,11 @@ export function registerArticlesCommands(program: Command) {
           return;
         }
         printSuccess('Article rewrite started.');
-        printInfo(`Run "balzac articles get ${id}" to follow it: Rewriting goes back to false when it is done.`);
+        printInfo(
+          `Run "balzac articles get ${id}${workspaceFlag(ws)}" to follow it: Rewriting goes back to false when ` +
+          'it is done. Stop after a timeout: a rewrite that never finishes keeps the article blocked ' +
+          '(write to hello@hirebalzac.ai).'
+        );
       } catch (err) {
         printError(err);
         process.exit(1);
@@ -238,7 +253,7 @@ export function registerArticlesCommands(program: Command) {
           return;
         }
         printSuccess('Picture regeneration started.');
-        printInfo(`Run "balzac articles get ${id}" to follow it: Picture URL changes when the new cover is ready.`);
+        printInfo(`Run "balzac articles get ${id}${workspaceFlag(ws)}" to follow it: Picture URL changes when the new cover is ready.`);
       } catch (err) {
         printError(err);
         process.exit(1);
@@ -269,8 +284,10 @@ export function registerArticlesCommands(program: Command) {
         printSuccess('Article publishing started. The post is sent in the background.');
         if (publication) printRecord(publication, PUBLISHED_FIELDS);
         printInfo(
-          `Run "balzac articles get ${id}" to follow it: Published turns true once the platform ` +
-          'accepts the post, and the live URL appears when the platform reports it (drafts and some webhooks never do).'
+          `Run "balzac articles get ${id}${workspaceFlag(ws)}" to follow it: Published turns true once the platform ` +
+          'accepts the post, and the live URL appears when the platform reports it (drafts and some webhooks never do). ' +
+          'Stop after a timeout: a failed send isn\'t reported, so if nothing changes, check the integration\'s ' +
+          `status with "balzac integrations get ${opts.integration}${workspaceFlag(ws)}".`
         );
       } catch (err) {
         printError(err);
@@ -304,7 +321,7 @@ export function registerArticlesCommands(program: Command) {
         printSuccess(`Article scheduled for ${publication?.scheduled_for ?? opts.at}.`);
         if (publication) {
           printRecord(publication, SCHEDULED_FIELDS);
-          printInfo(`To cancel it: balzac articles cancel-schedule ${id} --publication ${publication.id}`);
+          printInfo(`To cancel it: balzac articles cancel-schedule ${id} --publication ${publication.id}${workspaceFlag(ws)}`);
         }
       } catch (err) {
         printError(err);

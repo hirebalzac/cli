@@ -194,7 +194,7 @@ balzac articles export <article-id> --format markdown
 balzac articles export <article-id> --format html --output article.html
 ```
 
-Publishing runs in the background. `articles get` shows `Published: true` once the platform accepts the post, and the live URL once the platform reports where it went live. Drafts (Webflow or GoHighLevel set to draft) and webhooks that don't answer with a URL never report one.
+Publishing runs in the background. `articles get` shows `Published: true` once the platform accepts the post, and the live URL once the platform reports where it went live. Drafts (Webflow or GoHighLevel set to draft) and webhooks that don't answer with a URL never report one. A send that failed isn't reported, so stop checking after a while: if nothing changes, check the integration's status with `balzac integrations get <integration-id>`.
 
 ### Write (Shortcut)
 
