@@ -14,6 +14,9 @@ export function setQuietMode(enabled: boolean) {
 export function isJsonMode() {
   return jsonMode;
 }
+export function isQuietMode() {
+  return quietMode;
+}
 
 export function printJson(data: unknown) {
   console.log(JSON.stringify(data, null, 2));
@@ -33,6 +36,14 @@ export function printWarning(msg: string) {
   if (jsonMode || quietMode) return;
   console.log(chalk.yellow('⚠') + ' ' + msg);
 }
+
+// Next steps for errors whose message alone doesn't say what to do.
+const ERROR_HINTS: Record<string, string> = {
+  free_limit_reached:
+    'Rewrites and new covers are free, 2 each per article. You can still edit the article with "balzac articles update".',
+  plan_limit_reached:
+    'Each workspace is one website. Workspaces whose import failed (not_imported) don\'t count, and deleting one you no longer need frees its slot.',
+};
 
 export function printError(err: unknown) {
   if (err instanceof Error) {
@@ -57,6 +68,10 @@ export function printError(err: unknown) {
     );
     if (apiErr.type === 'insufficient_credits' && apiErr.required !== undefined) {
       console.error('  ' + chalk.yellow(`Credits required: ${apiErr.required}, available: ${apiErr.available ?? 0}`));
+    }
+    const hint = apiErr.type ? ERROR_HINTS[apiErr.type] : undefined;
+    if (hint) {
+      console.error('  ' + chalk.yellow(hint));
     }
     if (apiErr.details?.length) {
       for (const d of apiErr.details) {
@@ -171,6 +186,9 @@ export function formatStatus(status: string): string {
     rejected: chalk.dim,
     disabled: chalk.dim,
     not_imported: chalk.red,
+    published: chalk.green,
+    scheduled: chalk.yellow,
+    immediate: chalk.blue,
   };
   const fn = map[status] || chalk.white;
   return fn(status);
