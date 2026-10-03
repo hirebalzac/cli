@@ -29,7 +29,7 @@ balzac config set workspace <workspace-id>   # set default workspace
 ```bash
 # 1. Create workspace from a domain
 balzac workspaces create --domain https://myblog.com --wait
-balzac config set workspace "$(balzac --json workspaces list | jq -r '.workspaces[0].id')"
+balzac config set workspace "$(balzac --json workspaces list | jq -r '.[0].id')"
 
 # 2. Generate suggestions and accept one (5 credits)
 balzac suggestions generate                          # costs 1 credit

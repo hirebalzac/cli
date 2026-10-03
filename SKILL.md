@@ -44,7 +44,7 @@ export BALZAC_API_KEY=bz_your_key_here
 
 # 2. Create workspace and wait
 balzac workspaces create --domain https://myblog.com --wait
-WORKSPACE_ID=$(balzac --json workspaces list | jq -r '.workspaces[0].id')
+WORKSPACE_ID=$(balzac --json workspaces list | jq -r '.[0].id')
 balzac config set workspace "$WORKSPACE_ID"
 
 # 3. Manage keywords
@@ -358,7 +358,7 @@ balzac config reset
 #!/bin/bash
 # Create workspace from domain, wait for setup, set as default
 balzac workspaces create --domain https://myblog.com --wait
-WORKSPACE_ID=$(balzac --json workspaces list | jq -r '.workspaces[0].id')
+WORKSPACE_ID=$(balzac --json workspaces list | jq -r '.[0].id')
 balzac config set workspace "$WORKSPACE_ID"
 echo "Workspace $WORKSPACE_ID ready"
 ```
@@ -372,7 +372,7 @@ balzac suggestions generate
 echo "Waiting for suggestions..."
 sleep 30
 
-SUGGESTION_ID=$(balzac --json suggestions list --status proposed | jq -r '.suggestions[0].id')
+SUGGESTION_ID=$(balzac --json suggestions list --status proposed | jq -r '.[0].id')
 if [ "$SUGGESTION_ID" != "null" ]; then
   balzac suggestions accept "$SUGGESTION_ID"
   echo "Accepted suggestion $SUGGESTION_ID — article writing started"
@@ -393,7 +393,7 @@ balzac write "Best AI writing tools for 2026" --wait
 ```bash
 #!/bin/bash
 balzac --json suggestions list --status proposed | \
-  jq -r '.suggestions[].id' | \
+  jq -r '.[].id' | \
   while read -r id; do
     echo "Accepting $id..."
     balzac suggestions accept "$id"
@@ -407,7 +407,7 @@ balzac --json suggestions list --status proposed | \
 #!/bin/bash
 mkdir -p exports
 balzac --json articles list --status done | \
-  jq -r '.articles[] | "\(.id) \(.slug)"' | \
+  jq -r '.[] | "\(.id) \(.slug)"' | \
   while read -r id slug; do
     echo "Exporting $slug..."
     balzac articles export "$id" --format markdown --output "exports/${slug}.md"
@@ -421,7 +421,7 @@ balzac --json articles list --status done | \
 ARTICLE_ID="$1"
 echo "Waiting for article $ARTICLE_ID to complete..."
 while true; do
-  STATUS=$(balzac --json articles get "$ARTICLE_ID" | jq -r '.article.status')
+  STATUS=$(balzac --json articles get "$ARTICLE_ID" | jq -r '.status')
   echo "Status: $STATUS"
   if [ "$STATUS" = "done" ]; then
     echo "Article completed!"
@@ -443,11 +443,11 @@ balzac integrations create --service wordpress --name "Production Blog" \
   --wordpress-password "app_password_here" \
   --auto-publish
 
-INTG_ID=$(balzac --json integrations list | jq -r '.integrations[0].id')
+INTG_ID=$(balzac --json integrations list | jq -r '.[0].id')
 echo "Integration $INTG_ID created, testing connection..."
 sleep 5
 
-STATUS=$(balzac --json integrations get "$INTG_ID" | jq -r '.integration.status')
+STATUS=$(balzac --json integrations get "$INTG_ID" | jq -r '.status')
 echo "Connection status: $STATUS"
 ```
 
@@ -501,7 +501,7 @@ balzac --json gsc daily --start-date 2026-01-01 --end-date 2026-03-25
 #!/bin/bash
 # Find queries with high impressions but low CTR — optimization opportunities
 balzac --json gsc queries --per-page 100 | \
-  jq '[.queries[] | select(.impressions > 50 and .ctr < 2)] | sort_by(-.impressions) | .[:10]'
+  jq '[.[] | select(.impressions > 50 and .ctr < 2)] | sort_by(-.impressions) | .[:10]'
 ```
 
 ### Pattern 11: Error Handling and Retry
@@ -539,7 +539,7 @@ done
 - `--json` — Raw JSON output for piping to `jq` or other tools
 - `-q` / `--quiet` — IDs only, one per line
 
-All examples in this doc use `--json` mode with `jq` for scriptability.
+All examples in this doc use `--json` mode with `jq` for scriptability. `--json` prints the records themselves, without the API's wrapper: list commands print an array (`jq '.[0].id'`), and get, create and update commands print the record (`jq '.status'`).
 
 ### Pagination
 

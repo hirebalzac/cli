@@ -9,7 +9,7 @@ DOMAIN="${1:?Usage: $0 <domain>}"
 echo "Creating workspace for $DOMAIN..."
 balzac workspaces create --domain "$DOMAIN" --wait
 
-WORKSPACE_ID=$(balzac --json workspaces list | jq -r '.workspaces[0].id')
+WORKSPACE_ID=$(balzac --json workspaces list | jq -r '.[0].id')
 balzac config set workspace "$WORKSPACE_ID"
 
 echo ""

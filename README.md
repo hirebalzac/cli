@@ -384,7 +384,7 @@ balzac -q workspaces list
 balzac workspaces create --domain https://myblog.com --wait
 
 # 2. Set it as default
-WORKSPACE_ID=$(balzac --json workspaces list | jq -r '.workspaces[0].id')
+WORKSPACE_ID=$(balzac --json workspaces list | jq -r '.[0].id')
 balzac config set workspace "$WORKSPACE_ID"
 
 # 3. Generate suggestions
@@ -394,13 +394,13 @@ balzac suggestions generate
 sleep 30
 
 # 4. Accept the first proposed suggestion
-SUGGESTION_ID=$(balzac --json suggestions list --status proposed | jq -r '.suggestions[0].id')
+SUGGESTION_ID=$(balzac --json suggestions list --status proposed | jq -r '.[0].id')
 balzac suggestions accept "$SUGGESTION_ID"
 
 # 5. Wait for article to complete
 echo "Article writing started. Polling..."
 while true; do
-  STATUS=$(balzac --json articles list --status done | jq -r '.articles | length')
+  STATUS=$(balzac --json articles list --status done | jq -r 'length')
   if [ "$STATUS" -gt "0" ]; then
     echo "Article done!"
     balzac articles list --status done
@@ -416,7 +416,7 @@ done
 #!/bin/bash
 
 balzac --json suggestions list --status proposed | \
-  jq -r '.suggestions[].id' | \
+  jq -r '.[].id' | \
   while read -r id; do
     echo "Accepting $id..."
     balzac suggestions accept "$id"
@@ -432,7 +432,7 @@ balzac --json suggestions list --status proposed | \
 mkdir -p exports
 
 balzac --json articles list --status done | \
-  jq -r '.articles[] | "\(.id) \(.slug)"' | \
+  jq -r '.[] | "\(.id) \(.slug)"' | \
   while read -r id slug; do
     echo "Exporting $slug..."
     balzac articles export "$id" --format markdown --output "exports/${slug}.md"
