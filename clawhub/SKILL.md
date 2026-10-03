@@ -55,7 +55,7 @@ balzac articles publish <id> --integration <integration-id>
 | `balzac briefings create --topic "..."` | Direct write instruction (5 cr) |
 | `balzac write "topic" [--wait]` | Shortcut: briefing + optional wait |
 | `balzac articles list/get/export/rewrite/publish` | Manage articles |
-| `balzac articles regenerate-picture <id>` | New cover image (1 cr) |
+| `balzac articles regenerate-picture <id>` | New cover image (free, 2 per article) |
 | `balzac competitors list/add/remove` | Track competitor domains |
 | `balzac links list/add/remove` | Reference links for articles |
 | `balzac integrations list/create/get/reconnect` | Publishing integrations |
@@ -69,8 +69,8 @@ balzac articles publish <id> --integration <integration-id>
 |--------|---------|
 | Generate 10 suggestions | 1 |
 | Write article (accept suggestion or create briefing) | 5 |
-| Rewrite article | 3 |
-| Regenerate picture | 1 |
+| Rewrite article | Free, 2 per article |
+| Regenerate picture (new cover) | Free, 2 per article |
 
 ## Key Notes
 
@@ -79,4 +79,6 @@ balzac articles publish <id> --integration <integration-id>
 - Article writing is async — use `write --wait` or poll `articles get <id>`.
 - Workspace creation is async — use `--wait` flag.
 - Supported integrations: WordPress, Webflow, Wix, GoHighLevel, Webhook.
+- `articles get` shows the live URL and the publications; `articles publish` prints the new publication.
+- `auth status` shows the account, available credits, key name and role.
 - Run `balzac <command> --help` for full option details.

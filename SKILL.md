@@ -74,6 +74,9 @@ balzac articles export <article-id> --format markdown
 export BALZAC_API_KEY=bz_your_key_here
 balzac auth login bz_your_key_here
 
+# Check the key: account, available credits, key name, role and admin flag
+balzac auth status
+
 # Optional: set default workspace
 balzac config set workspace <workspace-id>
 
@@ -170,22 +173,23 @@ balzac briefings delete <briefing-id>
 ### Articles
 
 ```bash
-# List articles
+# List articles (Live URL column once published)
 balzac articles list
 balzac articles list --status done
 balzac articles list --status done --published false
 
-# Get article (includes HTML content when done)
+# Get article: details, live URL and publications (ID, status, URL, scheduled time)
+# --json also includes the HTML content when done
 balzac articles get <article-id>
 
 # Update metadata
 balzac articles update <id> --title "New Title" --slug "new-slug"
 
-# Rewrite article (costs 3 credits)
+# Rewrite article (free, 2 per article; poll articles get until Rewriting is false)
 balzac articles rewrite <id>
 balzac articles rewrite <id> --length long --instructions "More technical depth"
 
-# Regenerate picture (costs 1 credit)
+# Regenerate picture (free, 2 per article; Picture URL changes when it is ready)
 balzac articles regenerate-picture <id>
 balzac articles regenerate-picture <id> --style watercolor
 
@@ -193,13 +197,13 @@ balzac articles regenerate-picture <id> --style watercolor
 balzac articles export <id> --format markdown
 balzac articles export <id> --format html --output article.html
 
-# Publish
+# Publish now: prints the new publication (-q prints only its ID)
 balzac articles publish <id> --integration <integration-id>
 
-# Schedule publication
+# Schedule publication: prints the publication ID (-q prints only the ID)
 balzac articles schedule <id> --integration <int-id> --at "2026-04-01T10:00:00Z"
 
-# Cancel schedule
+# Cancel schedule (publication IDs are listed by articles get)
 balzac articles cancel-schedule <id> --publication <publication-id>
 
 # Delete article
@@ -274,6 +278,12 @@ balzac integrations create --service webhook --name "My Webhook" \
 
 # Update integration
 balzac integrations update <id> --name "New Name" --auto-publish true
+
+# Moving a URL needs its secret again in the same command: a WordPress URL on
+# another site needs --wordpress-password, a new webhook URL needs --webhook-token
+# (when the integration has one). Otherwise: 422 validation_failed.
+balzac integrations update <id> --wordpress-url https://newblog.com \
+  --wordpress-password "app_pass_here"
 
 # Reconnect / test connection
 balzac integrations reconnect <id>
@@ -463,7 +473,9 @@ balzac integrations create --service webhook --name "My App Webhook" \
 # }
 #
 # Authorization header: Bearer my_secret_token
-# Your endpoint should respond with 200 OK
+# Your endpoint should respond with 200 OK. Answer with JSON such as
+# {"url": "https://example.com/blog/article-slug"} and Balzac records it as the
+# article's live URL (shown by balzac articles get).
 ```
 
 ### Pattern 9: Monitor Search Performance
@@ -555,10 +567,12 @@ balzac keywords list
 | Accept suggestion (starts article writing) | 5 |
 | Create briefing (starts article writing) | 5 |
 | Generate 10 new suggestions | 1 |
-| Rewrite article | 3 |
-| Regenerate picture | 1 |
+| Rewrite article | Free, 2 per article |
+| Regenerate picture (new cover) | Free, 2 per article |
 
-If credits are insufficient, article status will be `waiting_for_credits`.
+If credits are insufficient, article status will be `waiting_for_credits`. Check available credits with `balzac auth status`.
+
+Rewrites and new covers cost no credits. Each article includes 2 rewrites and 2 new covers (the cover written with the article doesn't count), and one counts when it finishes. Only one rewrite and one new cover run at a time per article: starting another returns `409 conflict`. Once an article has used its 2, the API returns `422 free_limit_reached`.
 
 ### Async Operations
 
@@ -569,6 +583,7 @@ Several operations are asynchronous:
 - **Article writing** (poll with `articles get` or use `write --wait`)
 - **Article rewrite** (poll with `articles get`)
 - **Picture regeneration** (poll with `articles get`)
+- **Publishing** (poll with `articles get`: `Published` turns true once the platform accepts the post, and the live URL appears when the platform reports it; drafts and webhooks without a URL in their answer never report one)
 - **Integration connection test** (poll with `integrations get` for status `up`/`down`)
 
 ---
@@ -578,7 +593,7 @@ Several operations are asynchronous:
 1. **API key not set** — Always `export BALZAC_API_KEY=key` or `balzac auth login` before using CLI
 2. **No default workspace** — Run `balzac config set workspace <id>` or pass `-w <id>` to every command
 3. **Workspace not ready** — After `workspaces create`, the workspace goes through `new` → `running` → `imported`. Use `--wait` or poll `workspaces get` until status is `imported` or `ready`
-4. **Insufficient credits** — The API returns `402 Payment Required` with `type: insufficient_credits` when you don't have enough credits. Article writing costs 5 credits, rewriting costs 3 credits, picture regeneration costs 1 credit. The error includes `required` and `available` fields
+4. **Insufficient credits**: the API returns `402 Payment Required` with `type: insufficient_credits` when you don't have enough credits. Article writing costs 5 credits and generating suggestions 1 credit; rewrites and new covers are free (2 per article). The error includes `required` and `available` fields
 5. **Async operations need polling** — Suggestion generation and article writing are asynchronous. Poll the relevant list/get endpoint
 6. **JSON output for scripting** — Always use `--json` flag when piping to `jq` or other tools. Default output is human-formatted and not parseable
 7. **Rate limiting** — API allows 100 requests/minute. CLI auto-retries on 429 with exponential backoff. Add `sleep 1` between batch operations
@@ -589,6 +604,9 @@ Several operations are asynchronous:
 12. **GSC data has ~3 day delay** — Google Search Console data is typically 2-3 days behind. The most recent days will show zero
 13. **GSC query data is privacy-filtered** — Google anonymizes low-volume queries. The sum of query-level data (`gsc queries`) will be lower than site-level totals (`gsc overview`). This is a Google limitation, not a bug
 14. **Search Console returns 412 if not connected** — All `gsc` commands require an active Google Search Console integration. If none is connected, the API returns `412 Precondition Failed`
+15. **Free rewrites and covers run out**: each article gets 2 rewrites and 2 new covers. A third returns `422 free_limit_reached`, and starting one while another runs returns `409 conflict`. Requests refused this way count nothing
+16. **Moving an integration URL needs its secret**: `integrations update --wordpress-url` to another site needs `--wordpress-password` in the same command, and a new `--webhook-url` needs `--webhook-token` when the integration has one. Credentials are never returned by `integrations get`
+17. **Workspace limit**: each workspace is a website. At the plan's limit, `workspaces create` returns `422 plan_limit_reached`. Workspaces whose import failed (`not_imported`) don't count
 
 ---
 
@@ -597,7 +615,7 @@ Several operations are asynchronous:
 ```bash
 # Auth
 balzac auth login                                           # Store API key
-balzac auth status                                          # Check auth
+balzac auth status                                          # Account, credits, role
 
 # Workspaces
 balzac workspaces list                                      # List
@@ -621,9 +639,9 @@ balzac briefings create --topic "Topic" --queue             # Queue (5 cr)
 
 # Articles
 balzac articles list --status done                          # Done articles
-balzac articles get <id>                                    # Full content
-balzac articles rewrite <id>                                # Rewrite (3 cr)
-balzac articles regenerate-picture <id>                     # Picture (1 cr)
+balzac articles get <id>                                    # Live URL, publications
+balzac articles rewrite <id>                                # Rewrite (free, 2/article)
+balzac articles regenerate-picture <id>                     # Picture (free, 2/article)
 balzac articles export <id> --format markdown               # Export
 balzac articles publish <id> --integration <int-id>         # Publish
 
