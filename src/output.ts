@@ -40,7 +40,7 @@ export function printWarning(msg: string) {
 // Next steps for errors whose message alone doesn't say what to do.
 const ERROR_HINTS: Record<string, string> = {
   free_limit_reached:
-    'Rewrites and new covers are free, 2 each per article. You can still edit the article with "balzac articles update".',
+    'The limit is per article: each article gets 2 free rewrites and 2 free new covers, and other articles keep theirs.',
   plan_limit_reached:
     'Each workspace is one website. Workspaces whose import failed (not_imported) don\'t count, and deleting one you no longer need frees its slot.',
 };
