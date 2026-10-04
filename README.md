@@ -176,9 +176,13 @@ balzac articles update <article-id> --title "New Title" --slug "new-slug"
 balzac articles rewrite <article-id>
 balzac articles rewrite <article-id> --length long --instructions "More technical depth"
 
-# Regenerate article picture (free, 2 per article)
+# Regenerate article picture (free, 2 per article; articles get shows New Covers Left)
 balzac articles regenerate-picture <article-id>
 balzac articles regenerate-picture <article-id> --style watercolor --instructions "Dark background"
+# No AI image: the title on a brand color gradient, or a stock photo with no AI fallback
+# (422 no_stock_photo when none matches: try other search words with --instructions)
+balzac articles regenerate-picture <article-id> --mode title --no-ai-images
+balzac articles regenerate-picture <article-id> --mode stock --no-ai-images --instructions "laptop on a desk"
 
 # Publish now: prints the new publication (-q prints only its ID)
 balzac articles publish <article-id> --integration <integration-id>
@@ -258,11 +262,15 @@ balzac integrations create --service wordpress --name "My Blog" \
 balzac integrations lookup webflow-sites --token "wf_token"
 balzac integrations lookup webflow-collections --token "wf_token" --site-id "site_123"
 
-# Create Webhook integration (auto-publish sends articles automatically)
+# Create Webhook integration (auto-publish sends articles automatically, and their
+# updates as article.updated; --no-webhook-updates if your endpoint can't update a post)
 balzac integrations create --service webhook --name "My Webhook" \
   --webhook-url https://example.com/hook \
   --webhook-token "optional_bearer_secret" \
   --auto-publish
+
+# Turn article.updated on for a webhook connected before updates existed
+balzac integrations update <id> --webhook-updates true
 
 # Update an integration. Pointing it to another WordPress site needs the
 # application password again in the same command, and a new webhook URL needs
@@ -284,18 +292,25 @@ balzac integrations delete <id>
 
 #### Webhook Payload
 
-When an article is published to a webhook integration, Balzac sends a `POST` request to your URL with the following JSON payload:
+Balzac sends a `POST` request to your URL, exactly as written (query string included), with the article as JSON. `event` is `article.published` when an article is published there (create the post), and `article.updated` when an article already published there changed (update the post it created, never create a second one):
 
 ```json
 {
+  "event": "article.published",
+  "article_id": "3f6c1d2e-8a4b-4c5d-9e7f-1a2b3c4d5e6f",
   "title": "Article Title",
   "content": "Full HTML content of the article",
   "slug": "article-slug",
   "description": "Short description or excerpt",
   "cover_image": "URL to the article's main image",
-  "published_at": "2026-03-19T15:30:45Z"
+  "published_at": "2026-03-19T15:30:45Z",
+  "seo_title": "Article Title",
+  "seo_description": "Short description or excerpt",
+  "schema_json_ld": "{\"@context\":\"https://schema.org\",\"@graph\":[...]}"
 }
 ```
+
+`article_id` is the same on every call for an article: key your posts on it. `seo_title` and `seo_description` are plain text for your `<title>` and meta description, and `schema_json_ld` is a schema.org JSON-LD string for a `script` tag of type `application/ld+json`. An `article.updated` call carries the whole article again, with the first send's `published_at`, an `updated_at`, and `external_id` when your endpoint answered the first call with an `id`.
 
 If you provided a `webhook_bearer_token`, it is included as:
 
@@ -303,9 +318,9 @@ If you provided a `webhook_bearer_token`, it is included as:
 Authorization: Bearer your_token_here
 ```
 
-Your endpoint should respond with `200 OK`. Set `auto_publish` to `true` to receive articles automatically as they are completed, or publish manually with `balzac articles publish <id> --integration <id>`.
+Your endpoint should respond with `200 OK`. Set `auto_publish` to `true` to receive articles automatically as they are completed (and their updates a few minutes after each edit), or publish manually with `balzac articles publish <id> --integration <id>`. Publishing an article that is already there updates the post when the article changed, instead of creating another. Updates only go to webhooks with updates on: on for new webhooks, off for webhooks connected before updates existed (`balzac integrations update <id> --webhook-updates true`).
 
-To report where the post went live, answer with a JSON object such as `{"url": "https://example.com/blog/article-slug"}`. Balzac saves it as the article's live URL, shown by `balzac articles get` and `balzac articles list`. It also accepts `link`, `permalink` and a few other keys (see the [webhook docs](https://developer.hirebalzac.ai/#section/Webhooks)).
+To report where the post went live, answer with a JSON object such as `{"id": "1042", "url": "https://example.com/blog/article-slug"}`. Balzac saves the URL as the article's live URL, shown by `balzac articles get` and `balzac articles list`, and sends the `id` back with updates. It also accepts `link`, `permalink` and a few other keys (see the [webhook docs](https://developer.hirebalzac.ai/#section/Webhooks)).
 
 ### Settings
 
@@ -468,7 +483,7 @@ balzac write "best AI writing tools 2026" --type listicle --length long --wait
 | Rewriting an article | Free, 2 per article |
 | Regenerating a picture (new cover) | Free, 2 per article |
 
-The cover written with the article doesn't count toward its 2 new covers. Only one rewrite and one new cover can run at a time per article (`409 conflict` while one runs), and once an article has used its 2, the API returns `422 free_limit_reached`. Check your available credits with `balzac auth status`.
+The cover written with the article doesn't count toward its 2 new covers, and `balzac articles get` shows what an article has left (Rewrites Left, New Covers Left). Only one rewrite and one new cover can run at a time per article (`409 conflict` while one runs), and once an article has used its 2, the API returns `422 free_limit_reached`. Check your available credits with `balzac auth status`.
 
 ---
 
@@ -484,9 +499,11 @@ The CLI provides clear error messages with colored output:
 | `insufficient_credits` | Not enough credits: check your billing in the Balzac app |
 | `not_found` | Resource doesn't exist: check the ID |
 | `conflict` | Action not allowed (e.g. accepting an already accepted suggestion, or a rewrite or new cover already running) |
-| `validation_failed` | Invalid parameters: check the `details` in the error (e.g. a moved integration URL without its secret) |
+| `validation_failed` | Invalid parameters: check the `details` in the error (e.g. a moved integration URL without its secret), or the message (e.g. an unknown `--style`) |
 | `limit_reached` | Keyword limit reached: upgrade plan or disable existing keywords |
 | `free_limit_reached` | The article has used its 2 free rewrites or 2 free new covers |
+| `no_stock_photo` | `regenerate-picture --no-ai-images` found no stock photo: try a few search words with `--instructions`, or `--mode title` |
+| `stock_photo_unavailable` | The stock photo search didn't answer in time (503): try again in a minute |
 | `plan_limit_reached` | Your plan's website limit is reached: upgrade, or delete a workspace you no longer need |
 | `rate_limited` | Too many requests: CLI auto-retries with backoff |
 

@@ -43,6 +43,10 @@ const ERROR_HINTS: Record<string, string> = {
     'The limit is per article: each article gets 2 free rewrites and 2 free new covers, and other articles keep theirs.',
   plan_limit_reached:
     'Each workspace is one website. Workspaces whose import failed (not_imported) don\'t count, and deleting one you no longer need frees its slot.',
+  no_stock_photo:
+    'Nothing was counted. Try a few search words with --instructions (e.g. --instructions "laptop on a desk"), or --mode title.',
+  stock_photo_unavailable:
+    'Nothing was counted. Try again in a minute, or use --mode title.',
 };
 
 export function printError(err: unknown) {

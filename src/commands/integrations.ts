@@ -103,6 +103,8 @@ export function registerIntegrationsCommands(program: Command) {
           serviceFields.push({ key: 'gohighlevel_publication_status', label: 'Pub. Status' });
         } else if (service === 'webhook') {
           serviceFields.push({ key: 'webhook_url', label: 'Webhook URL' });
+          // Whether the webhook gets article.updated after an edit.
+          serviceFields.push({ key: 'webhook_updates', label: 'Updates' });
         }
 
         if (serviceFields.length > 0) {
@@ -146,8 +148,9 @@ export function registerIntegrationsCommands(program: Command) {
     .option('--ghl-author-id <id>', 'GoHighLevel author ID')
     .option('--ghl-category-id <id>', 'GoHighLevel category ID')
     .option('--ghl-pub-status <status>', 'GoHighLevel publication status: PUBLISHED|DRAFT', 'PUBLISHED')
-    .option('--webhook-url <url>', 'Webhook URL')
+    .option('--webhook-url <url>', 'Webhook URL (posted to as written, query string included)')
     .option('--webhook-token <token>', 'Webhook bearer token')
+    .option('--no-webhook-updates', 'Don\'t send article.updated after an edit (for endpoints that create a post on every call)')
     .option('-w, --workspace <id>', 'Workspace ID')
     .action(async (opts) => {
       try {
@@ -181,6 +184,7 @@ export function registerIntegrationsCommands(program: Command) {
         } else if (opts.service === 'webhook') {
           body.webhook_url = opts.webhookUrl;
           body.webhook_bearer_token = opts.webhookToken;
+          if (opts.webhookUpdates === false) body.webhook_updates = false;
         }
 
         const res = await client.post<{ integration: Record<string, unknown> }>(
@@ -220,6 +224,7 @@ export function registerIntegrationsCommands(program: Command) {
     .option('--ghl-pub-status <status>', 'GoHighLevel publication status')
     .option('--webhook-url <url>', 'Webhook URL (changing it needs --webhook-token in the same command when the integration has one)')
     .option('--webhook-token <token>', 'Webhook bearer token')
+    .option('--webhook-updates <bool>', 'Send article.updated to the webhook after an edit: true/false')
     .option('-w, --workspace <id>', 'Workspace ID')
     .action(async (id, opts) => {
       try {
@@ -245,6 +250,7 @@ export function registerIntegrationsCommands(program: Command) {
         if (opts.ghlPubStatus) body.gohighlevel_publication_status = opts.ghlPubStatus;
         if (opts.webhookUrl) body.webhook_url = opts.webhookUrl;
         if (opts.webhookToken) body.webhook_bearer_token = opts.webhookToken;
+        if (opts.webhookUpdates !== undefined) body.webhook_updates = opts.webhookUpdates === 'true';
 
         const res = await client.patch<{ integration: Record<string, unknown> }>(
           `/workspaces/${ws}/integrations/${id}`,
