@@ -194,12 +194,17 @@ balzac articles rewrite <id> --length long --instructions "More technical depth"
 # Regenerate picture (free, 2 per article; Picture URL changes when it is ready)
 balzac articles regenerate-picture <id>
 balzac articles regenerate-picture <id> --style watercolor
+# No AI image: title on a brand color gradient, or stock photo with no AI fallback
+# (422 no_stock_photo when none matches: retry with --instructions "search words")
+balzac articles regenerate-picture <id> --mode stock --no-ai-images --instructions "laptop on a desk"
 
 # Export content
 balzac articles export <id> --format markdown
 balzac articles export <id> --format html --output article.html
 
-# Publish now: prints the new publication (-q prints only its ID)
+# Publish now: prints the new publication (-q prints only its ID). Already on
+# that integration: no new publication; prints the API's message, and --json
+# adds publish: {"result": "already_published", "publication_id", "message"}
 balzac articles publish <id> --integration <integration-id>
 
 # Schedule publication: prints the publication ID (-q prints only the ID)
@@ -274,9 +279,13 @@ balzac integrations create --service gohighlevel --name "My GHL Blog" \
   --ghl-blog-id "blog_123" --ghl-author-id "author_123" \
   --ghl-category-id "cat_123"
 
-# Create Webhook integration
+# Create Webhook integration (--no-webhook-updates: no article.updated calls)
 balzac integrations create --service webhook --name "My Webhook" \
   --webhook-url https://example.com/hook --webhook-token "optional_bearer"
+
+# Turn article.updated on for a webhook connected before updates existed
+# (--webhook-updates and --auto-publish take true or false; anything else is an error)
+balzac integrations update <id> --webhook-updates true
 
 # Update integration
 balzac integrations update <id> --name "New Name" --auto-publish true
@@ -464,20 +473,29 @@ balzac integrations create --service webhook --name "My App Webhook" \
   --webhook-token "my_secret_token" \
   --auto-publish
 
-# Webhook payload sent to your URL:
+# Webhook payload sent to your URL (exactly as written, query string included):
 # {
+#   "event": "article.published",        # or "article.updated" after an edit
+#   "article_id": "3f6c1d2e-...",        # the same on every call: key posts on it
 #   "title": "Article Title",
 #   "content": "Full HTML content",
 #   "slug": "article-slug",
 #   "description": "Short excerpt",
 #   "cover_image": "https://...",
-#   "published_at": "2026-03-19T15:30:45Z"
+#   "published_at": "2026-03-19T15:30:45Z",
+#   "seo_title": "Article Title",
+#   "seo_description": "Short excerpt",
+#   "schema_json_ld": "{\"@context\":\"https://schema.org\",...}"
 # }
+# article.updated carries the whole article again, plus updated_at and
+# external_id (the id your endpoint answered the first call with): update the
+# post, never create a second one.
 #
 # Authorization header: Bearer my_secret_token
 # Your endpoint should respond with 200 OK. Answer with JSON such as
-# {"url": "https://example.com/blog/article-slug"} and Balzac records it as the
-# article's live URL (shown by balzac articles get).
+# {"id": "1042", "url": "https://example.com/blog/article-slug"} and Balzac
+# records the URL as the article's live URL (shown by balzac articles get).
+# Full contract: https://developer.hirebalzac.ai/#section/Webhooks
 ```
 
 ### Pattern 9: Monitor Search Performance
@@ -541,7 +559,7 @@ done
 - `--json`: Raw JSON output for piping to `jq` or other tools
 - `-q` / `--quiet`: IDs only, one per line
 
-All examples in this doc use `--json` mode with `jq` for scriptability. `--json` prints the records themselves, without the API's wrapper: list commands print an array (`jq '.[0].id'`), and get, create and update commands print the record (`jq '.status'`).
+All examples in this doc use `--json` mode with `jq` for scriptability. `--json` prints the records themselves, without the API's wrapper: list commands print an array (`jq '.[0].id'`), and get, create and update commands print the record (`jq '.status'`). `articles publish` prints the article; when it was already on that integration, the article also has a `publish` object (`result: already_published`, `publication_id`, `message`), and its newest publication is the old one.
 
 ### Pagination
 
@@ -574,7 +592,7 @@ balzac keywords list
 
 If credits are insufficient, article status will be `waiting_for_credits`. Check available credits with `balzac auth status`.
 
-Rewrites and new covers cost no credits. Each article includes 2 rewrites and 2 new covers (the cover written with the article doesn't count), and one counts when it finishes. Only one rewrite and one new cover run at a time per article: starting another returns `409 conflict`. Once an article has used its 2, the API returns `422 free_limit_reached`.
+Rewrites and new covers cost no credits. Each article includes 2 rewrites and 2 new covers (the cover written with the article doesn't count), and one counts when it finishes; `articles get` shows Rewrites Left and New Covers Left (`rewrites_left`, `new_covers_left` with `--json`). Only one rewrite and one new cover run at a time per article: starting another returns `409 conflict`. Once an article has used its 2, the API returns `422 free_limit_reached`. `regenerate-picture` with an unknown `--style` returns `422 validation_failed` (the message lists the styles), and with `--no-ai-images` a stock cover with no matching photo returns `422 no_stock_photo`.
 
 ### Async Operations
 

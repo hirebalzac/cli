@@ -36,6 +36,8 @@ const FIELDS = [
   { key: 'published_at', label: 'Published At' },
   { key: 'live_url', label: 'Live URL' },
   { key: 'rewriting', label: 'Rewriting' },
+  { key: 'rewrites_left', label: 'Rewrites Left' },
+  { key: 'new_covers_left', label: 'New Covers Left' },
   { key: 'done_at', label: 'Done At' },
   { key: 'main_picture_url', label: 'Picture URL' },
   { key: 'created_at', label: 'Created' },
@@ -73,10 +75,37 @@ rewrites of the article return 409 until it finishes. If it never finishes, writ
 to hello@hirebalzac.ai.`;
 
 const PICTURE_HELP = `
+Modes:
+  title   The article title over a background in the brand color: an AI image, or
+          a gradient of the brand color with --no-ai-images.
+  stock   A stock photo (Unsplash). Without --no-ai-images, a photorealistic AI
+          image when no photo matches.
+  ai      An image in --style, or in the workspace's style.
+Without --mode, the workspace's cover mode applies.
+
+Styles (--style, the API's list): stock-photo, photorealistic, anime, comic-book,
+cyber-punk, pixel-art, hand-drawn, line-art, isometric, origami, watercolor,
+flat-illustration, 3d-clay. stock-photo is a stock photo; the others are AI images.
+
+--instructions guides an AI image or a title background. For a stock photo, it is
+the search query (e.g. "laptop on a desk").
+
+--no-ai-images: no AI image at all. --mode title draws the title on a gradient of
+the brand color (--instructions is not used), and --mode stock never falls back to
+AI. --mode ai, or an AI --style outside title mode, is refused.
+
 New covers are free: each article includes 2 on top of the cover written with it,
-and a cover counts when it is generated. Only one runs at a time per article (409
-conflict while one runs). Once the article has used its 2, the API returns 422
-free_limit_reached.`;
+and a cover counts when it is generated ("balzac articles get" shows New Covers
+Left). Only one runs at a time per article (409 conflict while one runs).
+
+422 errors, which count nothing:
+  free_limit_reached   The article has used its 2 new covers.
+  validation_failed    An unknown --style (the message lists the valid ones), or
+                       --mode ai or an AI --style with --no-ai-images.
+  no_stock_photo       --no-ai-images and no stock photo matches: try a few search
+                       words with --instructions, or --mode title.
+A 503 stock_photo_unavailable means the stock photo search did not answer in time
+(--no-ai-images): try again in a minute.`;
 
 // The -w flag for a printed follow-up command, so it still works when pasted without
 // a default workspace (or with another one).
@@ -237,15 +266,19 @@ export function registerArticlesCommands(program: Command) {
     .argument('<id>', 'Article ID')
     .option('-w, --workspace <id>', 'Workspace ID')
     .option('--mode <mode>', 'Picture mode: title (title overlay), stock (stock photo), ai (AI generated)')
-    .option('--style <s>', 'Picture style override (for ai mode)')
-    .option('--instructions <text>', 'Generation instructions (for ai mode)')
+    .option('--style <s>', 'Picture style override (see the styles below)')
+    .option('--instructions <text>', 'Image instructions, or the search words for a stock photo')
+    .option('--no-ai-images', 'No AI image: a title on a brand color gradient, or a stock photo with no AI fallback')
     .action(async (id, opts) => {
       try {
         const ws = resolveWorkspace(opts.workspace);
         const body: Record<string, unknown> = {};
         if (opts.mode) body.picture_mode = opts.mode;
+        // Without a style, the API uses the workspace's, which can be an AI one.
         if (opts.style) body.pictures_style = opts.style;
+        else if (opts.mode === 'stock') body.pictures_style = 'stock-photo';
         if (opts.instructions) body.additional_instructions = opts.instructions;
+        if (opts.aiImages === false) body.ai_images = false;
 
         const res = await client.post<Row>(`/workspaces/${ws}/articles/${id}/regenerate_picture`, body);
         if (isJsonMode()) {
@@ -261,22 +294,35 @@ export function registerArticlesCommands(program: Command) {
     });
 
   art.command('publish')
-    .description('Publish an article now (prints the new publication; -q prints its ID)')
+    .description('Publish an article now (prints the new publication, or the API\'s message when the article is already there; -q prints the publication ID)')
     .argument('<id>', 'Article ID')
     .requiredOption('--integration <id>', 'Integration ID')
     .option('-w, --workspace <id>', 'Workspace ID')
     .action(async (id, opts) => {
       try {
         const ws = resolveWorkspace(opts.workspace);
-        const res = await client.post<{ article: Row }>(`/workspaces/${ws}/articles/${id}/publish`, {
+        const res = await client.post<{ article: Row; publish?: Row }>(`/workspaces/${ws}/articles/${id}/publish`, {
           integration_id: opts.integration,
         });
         const article = res.data.article;
-        const publication = newestPublication(article);
+        // Already on that integration: no new publication, and the newest
+        // one in the article is the old one. publish has result
+        // already_published, its publication_id and the API's message, which
+        // says when nothing was sent (the integration can't take updates).
+        const already = res.data.publish;
         if (isJsonMode()) {
-          printJson(article);
+          printJson(already ? { ...article, publish: already } : article);
           return;
         }
+        if (already) {
+          if (isQuietMode()) {
+            if (already.publication_id) console.log(already.publication_id);
+            return;
+          }
+          printInfo(String(already.message ?? 'Already published on this integration.'));
+          return;
+        }
+        const publication = newestPublication(article);
         if (isQuietMode()) {
           if (publication) console.log(publication.id);
           return;
