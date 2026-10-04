@@ -184,7 +184,10 @@ balzac articles regenerate-picture <article-id> --style watercolor --instruction
 balzac articles regenerate-picture <article-id> --mode title --no-ai-images
 balzac articles regenerate-picture <article-id> --mode stock --no-ai-images --instructions "laptop on a desk"
 
-# Publish now: prints the new publication (-q prints only its ID)
+# Publish now: prints the new publication (-q prints only its ID). An article
+# already on that integration gets no new publication: the command prints the
+# API's message instead, which says when nothing was sent, and --json adds it
+# as publish ({"result": "already_published", "publication_id", "message"})
 balzac articles publish <article-id> --integration <integration-id>
 
 # Schedule publication: prints the publication ID that cancel-schedule needs
@@ -270,6 +273,7 @@ balzac integrations create --service webhook --name "My Webhook" \
   --auto-publish
 
 # Turn article.updated on for a webhook connected before updates existed
+# (--webhook-updates and --auto-publish take true or false, nothing else)
 balzac integrations update <id> --webhook-updates true
 
 # Update an integration. Pointing it to another WordPress site needs the
@@ -318,7 +322,7 @@ If you provided a `webhook_bearer_token`, it is included as:
 Authorization: Bearer your_token_here
 ```
 
-Your endpoint should respond with `200 OK`. Set `auto_publish` to `true` to receive articles automatically as they are completed (and their updates a few minutes after each edit), or publish manually with `balzac articles publish <id> --integration <id>`. Publishing an article that is already there updates the post when the article changed, instead of creating another. Updates only go to webhooks with updates on: on for new webhooks, off for webhooks connected before updates existed (`balzac integrations update <id> --webhook-updates true`).
+Your endpoint should respond with `200 OK`. Set `auto_publish` to `true` to receive articles automatically as they are completed (and their updates a few minutes after each edit), or publish manually with `balzac articles publish <id> --integration <id>`. Publishing an article that is already there updates the post when the article changed, instead of creating another (an article sent to a webhook before updates existed, whose endpoint answered without an `id`, can still be sent again as `article.published`). Updates only go to webhooks with updates on: on for new webhooks, off for webhooks connected before updates existed (`balzac integrations update <id> --webhook-updates true`).
 
 To report where the post went live, answer with a JSON object such as `{"id": "1042", "url": "https://example.com/blog/article-slug"}`. Balzac saves the URL as the article's live URL, shown by `balzac articles get` and `balzac articles list`, and sends the `id` back with updates. It also accepts `link`, `permalink` and a few other keys (see the [webhook docs](https://developer.hirebalzac.ai/#section/Webhooks)).
 

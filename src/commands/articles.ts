@@ -294,7 +294,7 @@ export function registerArticlesCommands(program: Command) {
     });
 
   art.command('publish')
-    .description('Publish an article now (prints the new publication; -q prints its ID)')
+    .description('Publish an article now (prints the new publication, or the API\'s message when the article is already there; -q prints the publication ID)')
     .argument('<id>', 'Article ID')
     .requiredOption('--integration <id>', 'Integration ID')
     .option('-w, --workspace <id>', 'Workspace ID')
@@ -305,13 +305,15 @@ export function registerArticlesCommands(program: Command) {
           integration_id: opts.integration,
         });
         const article = res.data.article;
+        // Already on that integration: no new publication, and the newest
+        // one in the article is the old one. publish has result
+        // already_published, its publication_id and the API's message, which
+        // says when nothing was sent (the integration can't take updates).
+        const already = res.data.publish;
         if (isJsonMode()) {
-          printJson(article);
+          printJson(already ? { ...article, publish: already } : article);
           return;
         }
-        // Already on that integration: no new publication. The message says
-        // whether the post there gets updated or nothing was sent.
-        const already = res.data.publish;
         if (already) {
           if (isQuietMode()) {
             if (already.publication_id) console.log(already.publication_id);

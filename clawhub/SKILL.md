@@ -79,6 +79,6 @@ balzac articles publish <id> --integration <integration-id>
 - Article writing is async: use `write --wait` or poll `articles get <id>`.
 - Workspace creation is async: use `--wait` flag.
 - Supported integrations: WordPress, Webflow, Wix, GoHighLevel, Webhook.
-- `articles get` shows the live URL, the publications, and the free rewrites and new covers left; `articles publish` prints the new publication.
+- `articles get` shows the live URL, the publications, and the free rewrites and new covers left; `articles publish` prints the new publication, or the API's message when the article is already there (`--json`: a `publish` object with `result: already_published`).
 - `auth status` shows the account, available credits, key name and role.
 - Run `balzac <command> --help` for full option details.

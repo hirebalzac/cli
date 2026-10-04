@@ -1,4 +1,4 @@
-import { Command } from 'commander';
+import { Command, InvalidArgumentError } from 'commander';
 import { client } from '../client.js';
 import { resolveWorkspace } from '../config.js';
 import {
@@ -14,6 +14,15 @@ const FIELDS = [
   { key: 'auto_publish', label: 'Auto-publish' },
   { key: 'created_at', label: 'Created' },
 ];
+
+// A true/false option value. Anything else is an error rather than a quiet
+// false: "--webhook-updates yes" must not turn updates off.
+function parseBool(value: string): boolean {
+  const v = value.trim().toLowerCase();
+  if (v === 'true') return true;
+  if (v === 'false') return false;
+  throw new InvalidArgumentError('Use true or false.');
+}
 
 const UPDATE_HELP = `
 Moving a URL needs its secret again. Balzac sends some secrets to a URL stored on
@@ -205,7 +214,7 @@ export function registerIntegrationsCommands(program: Command) {
     .addHelpText('after', UPDATE_HELP)
     .argument('<id>', 'Integration ID')
     .option('--name <name>', 'Integration name')
-    .option('--auto-publish <bool>', 'Enable/disable auto-publish')
+    .option('--auto-publish <bool>', 'Enable/disable auto-publish: true/false', parseBool)
     .option('--wordpress-url <url>', 'WordPress site URL (pointing it to another site needs --wordpress-password in the same command)')
     .option('--wordpress-username <user>', 'WordPress username')
     .option('--wordpress-password <pass>', 'WordPress application password')
@@ -224,14 +233,14 @@ export function registerIntegrationsCommands(program: Command) {
     .option('--ghl-pub-status <status>', 'GoHighLevel publication status')
     .option('--webhook-url <url>', 'Webhook URL (changing it needs --webhook-token in the same command when the integration has one)')
     .option('--webhook-token <token>', 'Webhook bearer token')
-    .option('--webhook-updates <bool>', 'Send article.updated to the webhook after an edit: true/false')
+    .option('--webhook-updates <bool>', 'Send article.updated to the webhook after an edit: true/false', parseBool)
     .option('-w, --workspace <id>', 'Workspace ID')
     .action(async (id, opts) => {
       try {
         const ws = resolveWorkspace(opts.workspace);
         const body: Record<string, unknown> = {};
         if (opts.name) body.name = opts.name;
-        if (opts.autoPublish !== undefined) body.auto_publish = opts.autoPublish === 'true';
+        if (opts.autoPublish !== undefined) body.auto_publish = opts.autoPublish;
         if (opts.wordpressUrl) body.wordpress_url = opts.wordpressUrl;
         if (opts.wordpressUsername) body.wordpress_username = opts.wordpressUsername;
         if (opts.wordpressPassword) body.wordpress_application_password = opts.wordpressPassword;
@@ -250,7 +259,7 @@ export function registerIntegrationsCommands(program: Command) {
         if (opts.ghlPubStatus) body.gohighlevel_publication_status = opts.ghlPubStatus;
         if (opts.webhookUrl) body.webhook_url = opts.webhookUrl;
         if (opts.webhookToken) body.webhook_bearer_token = opts.webhookToken;
-        if (opts.webhookUpdates !== undefined) body.webhook_updates = opts.webhookUpdates === 'true';
+        if (opts.webhookUpdates !== undefined) body.webhook_updates = opts.webhookUpdates;
 
         const res = await client.patch<{ integration: Record<string, unknown> }>(
           `/workspaces/${ws}/integrations/${id}`,

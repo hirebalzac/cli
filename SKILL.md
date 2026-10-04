@@ -202,7 +202,9 @@ balzac articles regenerate-picture <id> --mode stock --no-ai-images --instructio
 balzac articles export <id> --format markdown
 balzac articles export <id> --format html --output article.html
 
-# Publish now: prints the new publication (-q prints only its ID)
+# Publish now: prints the new publication (-q prints only its ID). Already on
+# that integration: no new publication; prints the API's message, and --json
+# adds publish: {"result": "already_published", "publication_id", "message"}
 balzac articles publish <id> --integration <integration-id>
 
 # Schedule publication: prints the publication ID (-q prints only the ID)
@@ -282,6 +284,7 @@ balzac integrations create --service webhook --name "My Webhook" \
   --webhook-url https://example.com/hook --webhook-token "optional_bearer"
 
 # Turn article.updated on for a webhook connected before updates existed
+# (--webhook-updates and --auto-publish take true or false; anything else is an error)
 balzac integrations update <id> --webhook-updates true
 
 # Update integration
@@ -556,7 +559,7 @@ done
 - `--json`: Raw JSON output for piping to `jq` or other tools
 - `-q` / `--quiet`: IDs only, one per line
 
-All examples in this doc use `--json` mode with `jq` for scriptability. `--json` prints the records themselves, without the API's wrapper: list commands print an array (`jq '.[0].id'`), and get, create and update commands print the record (`jq '.status'`).
+All examples in this doc use `--json` mode with `jq` for scriptability. `--json` prints the records themselves, without the API's wrapper: list commands print an array (`jq '.[0].id'`), and get, create and update commands print the record (`jq '.status'`). `articles publish` prints the article; when it was already on that integration, the article also has a `publish` object (`result: already_published`, `publication_id`, `message`), and its newest publication is the old one.
 
 ### Pagination
 
