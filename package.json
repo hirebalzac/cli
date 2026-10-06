@@ -19,7 +19,14 @@
     "seo",
     "articles",
     "content-marketing",
-    "api"
+    "api",
+    "ai-seo",
+    "geo",
+    "keyword-research",
+    "blog",
+    "wordpress",
+    "webflow",
+    "search-console"
   ],
   "author": "Balzac <hello@hirebalzac.ai>",
   "license": "MIT",
