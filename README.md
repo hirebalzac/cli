@@ -7,6 +7,8 @@
 
 Built for AI coding agents ([Claude Code](https://claude.com/product/claude-code), [Claude Cowork](https://claude.com/product/cowork), [Codex](https://openai.com/codex/), [Mistral Vibe](https://vibe.mistral.ai), [Cursor](https://cursor.com), [Windsurf](https://windsurf.com), [Cline](https://cline.bot), [Aider](https://aider.chat)) and developers alike, the Balzac CLI provides a complete interface to the [Balzac API](https://developer.hirebalzac.ai), enabling automated content creation, SEO keyword management, and article publishing across integrations.
 
+No signup needed for the [free SEO tools](https://hirebalzac.ai/free-seo-tools/), such as the AI crawler checker.
+
 ---
 
 ## Installation
