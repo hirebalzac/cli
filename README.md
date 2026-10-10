@@ -91,6 +91,7 @@ balzac workspaces get <workspace-id>
 
 # Update workspace
 balzac workspaces update <workspace-id> --name "My Blog" --language en
+balzac workspaces update <workspace-id> --target-audience "Founders of small SaaS companies" --pain-points "No time to write\nAgencies are expensive"
 
 # Delete workspace
 balzac workspaces delete <workspace-id>

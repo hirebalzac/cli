@@ -139,6 +139,11 @@ export function registerWorkspacesCommands(program: Command) {
     .argument('<id>', 'Workspace ID')
     .option('--name <name>', 'Name')
     .option('--description <desc>', 'Description')
+    .option('--target-audience <text>', 'Who the articles are for')
+    .option('--pain-points <text>', 'Problems the audience has, one per line')
+    .option('--features-benefits <text>', 'Features and benefits to mention, one per line')
+    .option('--usage <text>', 'How customers use the product or site')
+    .option('--theme <text>', 'The site theme or niche')
     .option('--language <code>', 'Language')
     .option('--pictures-style <style>', 'Image style')
     .option('--title-based-image', 'Enable title overlay mode for cover images')
@@ -152,6 +157,11 @@ export function registerWorkspacesCommands(program: Command) {
         const body: Record<string, unknown> = {};
         if (opts.name) body.name = opts.name;
         if (opts.description) body.description = opts.description;
+        if (opts.targetAudience) body.target_audience = opts.targetAudience;
+        if (opts.painPoints) body.pain_points = opts.painPoints;
+        if (opts.featuresBenefits) body.features_benefits = opts.featuresBenefits;
+        if (opts.usage) body.usage = opts.usage;
+        if (opts.theme) body.theme = opts.theme;
         if (opts.language) body.language = opts.language;
         if (opts.picturesStyle) body.pictures_style = opts.picturesStyle;
         if (opts.titleBasedImage !== undefined) body.title_based_featured_image = opts.titleBasedImage;
